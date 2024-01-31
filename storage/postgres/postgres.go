@@ -44,3 +44,15 @@ func (s Store) Branch() storage.IBranchStorage{
 func (s Store) Sale() storage.ISaleStorage{
 	return NewSaleRepo(s.DB)
 }
+
+func (s Store) Product() storage.IProductStorage {
+	return NewProductRepo(s.DB)
+}
+
+func (s Store) Basket() storage.IBasketStorage {
+	return NewBasketRepo(s.DB)
+}
+
+func (s Store) Repository() storage.IRepositoryStorage {
+	return NewRepositoryRepo(s.DB)
+}
