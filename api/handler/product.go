@@ -1,108 +1,117 @@
 package handler
 
 import (
+	"context"
 	"developer/api/models"
-	"encoding/json"
 	"errors"
-	"fmt"
 	"net/http"
 	"strconv"
+
+	"github.com/gin-gonic/gin"
 )
 
-func (h Handler) Product(w http.ResponseWriter, r *http.Request) {
-	switch r.Method {
-	case http.MethodPost:
-		h.CreateProduct(w, r)
-	case http.MethodGet:
-		values := r.URL.Query()
-		_, ok := values["id"]
-		if !ok {
-			h.GetProductList(w, r)
-		} else {
-			h.GetProductByID(w, r)
-		}
-	case http.MethodPut:
-		h.UpdateProduct(w, r)
-	case http.MethodDelete:
-		h.DeleteProduct(w, r)
-	}
-}
-
-func (h Handler) CreateProduct(w http.ResponseWriter, r *http.Request) {
+// CreateProduct godoc
+// @Router       /product [POST]
+// @Summary      Create a new product
+// @Description  create a new product
+// @Tags         product
+// @Accept       json
+// @Produce      json
+// @Param 		 product body models.CreateProduct false "product"
+// @Success      200  {object}  models.Product
+// @Failure      400  {object}  models.Response
+// @Failure      404  {object}  models.Response
+// @Failure      500  {object}  models.Response
+func (h Handler) CreateProduct(c *gin.Context) {
 	createProd := models.CreateProduct{}
 	
-	if err := json.NewDecoder(r.Body).Decode(&createProd); err != nil {
-		hanldeResponse(w, http.StatusBadRequest, err)
-		return
+	err := c.ShouldBindJSON(&createProd)
+
+	if err != nil{
+		handleResponse(c,"Error in handlers, while reading json product!",http.StatusBadRequest, err.Error())
 	}
 
-	pKey, err := h.Store.Product().Create(createProd)
+	pKey, err := h.Store.Product().Create(context.Background(),createProd)
 	if err != nil {
-		hanldeResponse(w, http.StatusInternalServerError, err)
+		handleResponse(c, "Error in handlers, while creating product!",http.StatusInternalServerError, err.Error())
 		return
 	}
 
-	product, err := h.Store.Product().GetByID(models.PrimaryKey{
+	product, err := h.Store.Product().GetByID(context.Background(),models.PrimaryKey{
 		ID: pKey,
 	})
 	if err != nil {
-		hanldeResponse(w, http.StatusInternalServerError, err)
+		handleResponse(c, "Error in handlers, while getting basket by id!" ,http.StatusInternalServerError, err.Error())
 		return
 	}
 
-	hanldeResponse(w, http.StatusCreated, product)
+	handleResponse(c, "",http.StatusCreated, product)
 }
 
-func (h Handler) GetProductByID(w http.ResponseWriter, r *http.Request) {
-	values := r.URL.Query()
-	if len(values["id"]) <= 0 {
-		hanldeResponse(w, http.StatusBadRequest, errors.New("id is required"))
-		return
-	}
+// GetProduct godoc
+// @Router       /product/{id} [GET]
+// @Summary      Get product by id
+// @Description  get product by id
+// @Tags         product
+// @Accept       json
+// @Produce      json
+// @Param 		 id path string true "product_id"
+// @Success      200  {object}  models.Product
+// @Failure      400  {object}  models.Response
+// @Failure      404  {object}  models.Response
+// @Failure      500  {object}  models.Response
+func (h Handler) GetProductByID(c *gin.Context) {
+	uid := c.Param("id")
 
-	id := values["id"][0]
-	var err error
-
-	product, err := h.Store.Product().GetByID(models.PrimaryKey{
-		ID: id,
+	product, err := h.Store.Product().GetByID(context.Background(),models.PrimaryKey{
+		ID: uid,
 	})
 	if err != nil {
-		hanldeResponse(w, http.StatusInternalServerError, err)
+		handleResponse(c, "Error in handlers, while getting product by id!" ,http.StatusInternalServerError, err.Error())
 		return
 	}
 
-	hanldeResponse(w, http.StatusOK, product)
+	handleResponse(c, "",http.StatusOK, product)
 }
 
-func (h Handler) GetProductList(w http.ResponseWriter, r *http.Request) {
+// GetProductList godoc
+// @Router       /products [GET]
+// @Summary      Get product list
+// @Description  get product list
+// @Tags         product
+// @Accept       json
+// @Produce      json
+// @Param 		 page query string false "page"
+// @Param 		 limit query string false "limit"
+// @Param 		 search query string false "search"
+// @Success      200  {object}  models.Product
+// @Failure      400  {object}  models.Response
+// @Failure      404  {object}  models.Response
+// @Failure      500  {object}  models.Response
+func (h Handler) GetProductList(c *gin.Context) {
 	var (
 		page, limit = 1, 10
 		err         error
 		search 		string
 	)
-	values := r.URL.Query()
-
-	if len(values["page"]) > 0 {
-		page, err = strconv.Atoi(values["page"][0])
-		if err != nil {
-			page = 1
-		}
+	
+	pageStr := c.DefaultQuery("page", "1")
+	page, err = strconv.Atoi(pageStr)
+	if err != nil {
+		handleResponse(c, "error while parsing page", http.StatusBadRequest, err.Error())
+		return
 	}
 
-	if len(values["limit"]) > 0 {
-		limit, err = strconv.Atoi(values["limit"][0])
-		if err != nil {
-			fmt.Println("limit", values["limit"])
-			limit = 10
-		}
+	limitStr := c.DefaultQuery("limit", "10")
+	limit, err = strconv.Atoi(limitStr)
+	if err != nil {
+		handleResponse(c, "error while parsing limit", http.StatusBadRequest, err.Error())
+		return
 	}
 
-	if values["search"][0] != "" {
-		search = values["search"][0]
-	}else{
-		search = ""
-	}
-	resp, err := h.Store.Product().GetList(models.GetListRequest{
+	search = c.Query("search")
+
+	resp, err := h.Store.Product().GetList(context.Background(),models.GetListRequest{
 		Page:   page,
 		Limit:  limit,
 		Search: search,
@@ -110,53 +119,76 @@ func (h Handler) GetProductList(w http.ResponseWriter, r *http.Request) {
 
 		 
 	if err != nil {
-		hanldeResponse(w, http.StatusInternalServerError, err)
+		handleResponse(c, "Error in handlers, while getting list of products!",http.StatusInternalServerError, err.Error())
 		return
 	}
 
-	hanldeResponse(w, http.StatusOK, resp)
+	handleResponse(c, "",http.StatusOK, resp)
 }
 
-func (h Handler) UpdateProduct(w http.ResponseWriter, r *http.Request) {
+// UpdateProduct godoc
+// @Router       /product/{id} [PUT]
+// @Summary      Update product
+// @Description  update product
+// @Tags         product
+// @Accept       json
+// @Produce      json
+// @Param 		 id path string true "product_id"
+// @Param 		 product body models.UpdateProduct false "product"
+// @Success      200  {object}  models.Product
+// @Failure      400  {object}  models.Response
+// @Failure      404  {object}  models.Response
+// @Failure      500  {object}  models.Response
+func (h Handler) UpdateProduct(c *gin.Context) {
 	updateProd := models.UpdateProduct{}
 
-	if err := json.NewDecoder(r.Body).Decode(&updateProd); err != nil {
-		hanldeResponse(w, http.StatusBadRequest, err.Error())
-		return
-	}
+	uid := c.Param("id")
 
-	pKey, err := h.Store.Product().Update(updateProd)
+	if uid == ""{
+		handleResponse(c, "invalid uuid!", http.StatusBadRequest,errors.New("uuid is not valid"))
+		return
+	 }
+ 
+	 updateProd.ID = uid
+
+	pKey, err := h.Store.Product().Update(context.Background(),updateProd)
 	if err != nil {
-		hanldeResponse(w, http.StatusInternalServerError, err.Error())
+		handleResponse(c, "Error in handlers, while updating product!",http.StatusInternalServerError, err.Error())
 		return
 	}
 
-	product, err := h.Store.Product().GetByID(models.PrimaryKey{
+	product, err := h.Store.Product().GetByID(context.Background(),models.PrimaryKey{
 		ID: pKey,
 	})
 	if err != nil {
-		hanldeResponse(w, http.StatusInternalServerError, err)
+		handleResponse(c, "Error in hanlders, while getting product by id!",http.StatusInternalServerError, err)
 		return
 	}
 
-	hanldeResponse(w, http.StatusOK, product)
+	handleResponse(c, "",http.StatusOK, product)
 }
 
-func (h Handler) DeleteProduct(w http.ResponseWriter, r *http.Request) {
-	values := r.URL.Query()
-	if len(values["id"]) <= 0 {
-		hanldeResponse(w, http.StatusBadRequest, errors.New("id is required"))
-		return
-	}
+// DeleteProduct godoc
+// @Router       /product/{id} [DELETE]
+// @Summary      Delete product
+// @Description  delete product
+// @Tags         product
+// @Accept       json
+// @Produce      json
+// @Param 		 id path string true "product_id"
+// @Success      200  {object}  models.Response
+// @Failure      400  {object}  models.Response
+// @Failure      404  {object}  models.Response
+// @Failure      500  {object}  models.Response
+func (h Handler) DeleteProduct(c *gin.Context) {
+	 	uid := c.Param("id")
 
-	id := values["id"][0]
-
-	err := h.Store.Product().Delete(models.PrimaryKey{
-		ID: id,
+	err := h.Store.Product().Delete(context.Background(),models.PrimaryKey{
+		ID: uid,
 	})
 	if err != nil{
-		hanldeResponse(w, http.StatusInternalServerError, err.Error())
+		handleResponse(c, "Error in handlers, while deleting product!",http.StatusInternalServerError, err.Error())
 		return
 	}
-	hanldeResponse(w, http.StatusOK, "data successfully deleted")
+	handleResponse(c, "",http.StatusOK, "data successfully deleted")
 }

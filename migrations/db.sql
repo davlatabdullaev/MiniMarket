@@ -3,8 +3,8 @@ CREATE TABLE branch (
    name VARCHAR(75) NOT NULL,
    address VARCHAR(75) NOT NULL,
    created_at TIMESTAMP DEFAULT NOW(),
-   updated_at TIMESTAMP DEFAULT NOW(),
-   deleted_at TIMESTAMP DEFAULT NOW
+   updated_at TIMESTAMP,
+   deleted_at TIMESTAMP
 );
 CREATE TABLE category (
     id UUID PRIMARY KEY,
@@ -20,18 +20,18 @@ CREATE TABLE product (
     price numeric(75,4) not null,
     barcode varchar(10) unique not null,
     category_id uuid references category(id),
-    created_at timestamp DEFAULT NOW(),
-    updated_at timestamp DEFAULT NOW(),
-    deleted_at timestamp DEFAULT NOW()
+    created_at timestamp DEFAULT now(),
+    updated_at timestamp,
+    deleted_at timestamp
 );
-create table repository (
+create table  storage (
     id uuid PRIMARY key,
     product_id uuid references product(id),
     branch_id uuid references branch(id),
     count int not null,
-    created_at timestamp DEFAULT NOW(),
-    updated_at timestamp DEFAULT NOW(),
-    deleted_at timestamp DEFAULT NOW()
+    created_at timestamp DEFAULT now(),
+    updated_at timestamp,
+    deleted_at timestamp
 );
 create table sale (
     id uuid primary key,
@@ -42,9 +42,9 @@ create table sale (
     price numeric(75,4) not null,
     status  varchar(20) check (status in('in_procces', 'succes', 'cancel')),
     client_name varchar(75) not null,
-    created_at timestamp DEFAULT NOW(),
-    updated_at timestamp DEFAULT NOW(),
-    deleted_at timestamp DEFAULT NOW()
+    created_at timestamp DEFAULT now(),
+    updated_at timestamp,
+    deleted_at timestamp
 );
 create table basket (
     id uuid primary key,
@@ -52,9 +52,9 @@ create table basket (
     product_id uuid references product(id),
     quantity int not null,
     price numeric(75,4) not null,
-    created_at timestamp DEFAULT NOW(),
-    updated_at timestamp DEFAULT NOW(),
-    deleted_at timestamp DEFAULT NOW()
+    created_at timestamp DEFAULT now(),
+    updated_at timestamp,
+    deleted_at timestamp
 );
 create table tarif (
     id uuid primary key,
@@ -80,7 +80,7 @@ create table staff (
    password varchar(128) not null,
    created_at timestamp DEFAULT now(),
    updated_at timestamp,
-   deleted_at timestamp 
+   deleted_at timestamp
 );
 create table transaction (
   id uuid primary key,

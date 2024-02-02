@@ -1,62 +1,60 @@
 package postgres
 
 import (
-	"database/sql"
+	"context"
 	"developer/api/models"
 	"developer/storage"
-
 	"fmt"
-
 	"github.com/google/uuid"
+	"github.com/jackc/pgx/v5/pgxpool"
 )
 
 type branchRepo struct {
-	DB *sql.DB
+	DB *pgxpool.Pool
 }
 
-func NewBranchRepo(db *sql.DB) storage.IBranchStorage{
-	return branchRepo{
+func NewBranchRepo(db *pgxpool.Pool) storage.IBranch{
+	return &branchRepo{
 		DB: db,
 	}
 }
 
-func (b branchRepo) Create(branch models.CreateBranch)(string, error){
+func (b *branchRepo) Create(ctx context.Context, branch models.CreateBranch)(string, error){
 	uid := uuid.New()
-	query := `INSERT INTO branches values ($1, $2, $3)`
-	_, err := b.DB.Exec(query,
+	query := `INSERT INTO branche (id, name, address) values ($1, $2, $3)`
+	_, err := b.DB.Exec(ctx, query,
 		uid,
 		branch.Name,
 		branch.Address,
 	)
 	if err != nil{
-		fmt.Println("error while inserting to branches!")
+		fmt.Println("Error while inserting to branches!", err.Error())
 		return "", err
 	}
 
 	return uid.String(), nil
 }
 
-func (b branchRepo) GetByID(pKey models.PrimaryKey)(models.Branch, error){
+func (b *branchRepo) GetByID(ctx context.Context,pKey models.PrimaryKey)(models.Branch, error){
 	branch := models.Branch{}
 	query := `SELECT id, name, address, created_at, 
-	updated_at, deleted_at from branches where id = $1`
-	err := b.DB.QueryRow(query,pKey.ID).Scan(
+	updated_at from branche where id = $1`
+	err := b.DB.QueryRow(ctx,query,pKey.ID).Scan(
 		&branch.ID,
 		&branch.Name,
 		&branch.Address,
 		&branch.CreatedAt,
 		&branch.UpdatedAt,
-		&branch.DeletedAt,
 	)
 
 	if err != nil{
-		fmt.Println("error while selecting branch by id!")
+		fmt.Println("Error while selecting branch by id!", err.Error())
 		return models.Branch{},err
 	}
 	return branch, nil
 }
 
-func (b branchRepo) GetList(request models.GetListRequest) (models.BranchesResponse, error){
+func (b *branchRepo) GetList(ctx context.Context,request models.GetListRequest) (models.BranchesResponse, error){
 	var (
 		branches = []models.Branch{}
 		count = 0
@@ -67,20 +65,20 @@ func (b branchRepo) GetList(request models.GetListRequest) (models.BranchesRespo
 	)
 
 	countQuery = `
-	SELECT count(1) from branches`
+	SELECT count(1) from branche`
 
 	if search != ""{
 		countQuery += fmt.Sprintf(` WHERE (name ilike '%%%s%%' OR address ilike '%%%s%%')`, search, search)
 	}
 
-	err := b.DB.QueryRow(countQuery).Scan(&count)
+	err := b.DB.QueryRow(ctx,countQuery).Scan(&count)
 	if err != nil{
-		fmt.Println("error while scanning count of branches!")
+		fmt.Println("Error while scanning count of branches!", err.Error())
 		return models.BranchesResponse{}, err
 	}
 
 	query = `SELECT id, name, address, created_at, 
-	updated_at, deleted_at from branches`
+	updated_at from branche`
 		
 	
 	if search != ""{
@@ -89,9 +87,9 @@ func (b branchRepo) GetList(request models.GetListRequest) (models.BranchesRespo
 
 	query += `LIMIT $1 OFFSET $2`
 
-	rows, err := b.DB.Query(query,request.Limit,offset)
+	rows, err := b.DB.Query(ctx,query,request.Limit,offset)
 	if err != nil{
-		fmt.Println("error while query rows!", err.Error())
+		fmt.Println("Error while selecting branches!", err.Error())
 		return models.
 		BranchesResponse{},err
 	}
@@ -105,10 +103,9 @@ func (b branchRepo) GetList(request models.GetListRequest) (models.BranchesRespo
 			&branch.Address,
 			&branch.CreatedAt,
 			&branch.UpdatedAt,
-			&branch.DeletedAt,
 		)
 		if err != nil{
-			fmt.Println("error while scanning rows!", err.Error())
+			fmt.Println("Error while scanning branches!", err.Error())
 			return models.BranchesResponse{}, err
 		}
 		branches = append(branches, branch)
@@ -119,27 +116,27 @@ func (b branchRepo) GetList(request models.GetListRequest) (models.BranchesRespo
 	}, nil
 }
 
-func (b branchRepo) Update(branch models.UpdateBranch)(string, error){
-	query :=  `UPDATE branches set name = $1, address = $2 where id = $3`
+func (b *branchRepo) Update(ctx context.Context,branch models.UpdateBranch)(string, error){
+	query :=  `UPDATE branche set name = $1, address = $2 where id = $3`
 	uid, _ := uuid.Parse(branch.ID)
-	_, err := b.DB.Exec(query,
+	_, err := b.DB.Exec(ctx, query,
 		branch.Name,
 		branch.Address,
 		uid,
 	)
 	if err != nil{
-		fmt.Println("error while updating branches!", err.Error())
+		fmt.Println("Error while updating branches!", err.Error())
 		return "", err
 	}
 
 	return branch.ID, nil
 }
 
-func (b branchRepo) Delete(pKey models.PrimaryKey) error{
-	query := `DELETE from branches where id = $1`
-	_, err := b.DB.Exec(query,pKey)
+func (b *branchRepo) Delete(ctx context.Context,pKey models.PrimaryKey) error{
+	query := `DELETE from branche where id = $1`
+	_, err := b.DB.Exec(ctx,query,pKey)
 	if err != nil{
-		fmt.Println("error while deleting branch!", err.Error())
+		fmt.Println("Error while deleting branch!", err.Error())
 		return err
 	}
 	return nil

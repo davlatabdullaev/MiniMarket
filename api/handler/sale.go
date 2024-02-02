@@ -1,108 +1,117 @@
 package handler
 
 import (
+	"context"
 	"developer/api/models"
-	"encoding/json"
 	"errors"
-	"fmt"
 	"net/http"
 	"strconv"
+
+	"github.com/gin-gonic/gin"
 )
 
-func (h Handler) Sale(w http.ResponseWriter, r *http.Request) {
-	switch r.Method {
-	case http.MethodPost:
-		h.CreateSale(w, r)
-	case http.MethodGet:
-		values := r.URL.Query()
-		_, ok := values["id"]
-		if !ok {
-			h.GetSaleList(w, r)
-		} else {
-			h.GetSaleByID(w, r)
-		}
-	case http.MethodPut:
-		h.UpdateSale(w, r)
-	case http.MethodDelete:
-		h.DeleteSale(w, r)
-	}
-}
-
-func (h Handler) CreateSale(w http.ResponseWriter, r *http.Request) {
+// CreateSale godoc
+// @Router       /sale [POST]
+// @Summary      Create a new sale
+// @Description  create a new sale
+// @Tags         sale
+// @Accept       json
+// @Produce      json
+// @Param 		 sale body models.CreateSale false "sale"
+// @Success      200  {object}  models.Sale
+// @Failure      400  {object}  models.Response
+// @Failure      404  {object}  models.Response
+// @Failure      500  {object}  models.Response
+func (h Handler) CreateSale(c *gin.Context) {
 	createSale := models.CreateSale{}
-	
-	if err := json.NewDecoder(r.Body).Decode(&createSale); err != nil {
-		hanldeResponse(w, http.StatusBadRequest, err)
-		return
+
+	err := c.ShouldBindJSON(&createSale)
+	if err != nil{
+		handleResponse(c,"Error in handlers, while reading sale json!",http.StatusBadRequest,err.Error())
 	}
 
-	pKey, err := h.Store.Sale().Create(createSale)
+	pKey, err := h.Store.Sale().Create(context.Background(),createSale)
 	if err != nil {
-		hanldeResponse(w, http.StatusInternalServerError, err)
+		handleResponse(c, "Error in handlers, while creating sale!",http.StatusInternalServerError, err.Error())
 		return
 	}
 
-	sale, err := h.Store.Sale().GetByID(models.PrimaryKey{
+	sale, err := h.Store.Sale().GetByID(context.Background(),models.PrimaryKey{
 		ID: pKey,
 	})
 	if err != nil {
-		hanldeResponse(w, http.StatusInternalServerError, err)
+		handleResponse(c, "Error while getting sale by id!",http.StatusInternalServerError, err.Error())
 		return
 	}
 
-	hanldeResponse(w, http.StatusCreated, sale)
+	handleResponse(c, "",http.StatusCreated, sale)
 }
 
-func (h Handler) GetSaleByID(w http.ResponseWriter, r *http.Request) {
-	values := r.URL.Query()
-	if len(values["id"]) <= 0 {
-		hanldeResponse(w, http.StatusBadRequest, errors.New("id is required"))
-		return
-	}
+// GetSale godoc
+// @Router       /sale/{id} [GET]
+// @Summary      Get sale by id
+// @Description  get sale by id
+// @Tags         sale
+// @Accept       json
+// @Produce      json
+// @Param 		 id path string true "sale_id"
+// @Success      200  {object}  models.Sale
+// @Failure      400  {object}  models.Response
+// @Failure      404  {object}  models.Response
+// @Failure      500  {object}  models.Response
+func (h Handler) GetSaleByID(c *gin.Context) {
+	 
+	uid := c.Param("id")
 
-	id := values["id"][0]
-	var err error
-
-	sale, err := h.Store.Sale().GetByID(models.PrimaryKey{
-		ID: id,
+	sale, err := h.Store.Sale().GetByID(context.Background(),models.PrimaryKey{
+		ID: uid,
 	})
 	if err != nil {
-		hanldeResponse(w, http.StatusInternalServerError, err)
+		handleResponse(c, "Error in handlers, while getting sale by id!",http.StatusInternalServerError, err.Error())
 		return
 	}
 
-	hanldeResponse(w, http.StatusOK, sale)
+	handleResponse(c, "",http.StatusOK, sale)
 }
 
-func (h Handler) GetSaleList(w http.ResponseWriter, r *http.Request) {
+// GetSaleList godoc
+// @Router       /sales [GET]
+// @Summary      Get sale list
+// @Description  get sale list
+// @Tags         sale
+// @Accept       json
+// @Produce      json
+// @Param 		 page query string false "page"
+// @Param 		 limit query string false "limit"
+// @Param 		 search query string false "search"
+// @Success      200  {object}  models.Sale
+// @Failure      400  {object}  models.Response
+// @Failure      404  {object}  models.Response
+// @Failure      500  {object}  models.Response
+func (h Handler) GetSaleList(c *gin.Context) {
 	var (
 		page, limit = 1, 10
 		err         error
 		search 		string
 	)
-	values := r.URL.Query()
-
-	if len(values["page"]) > 0 {
-		page, err = strconv.Atoi(values["page"][0])
-		if err != nil {
-			page = 1
-		}
+	
+	pageStr := c.DefaultQuery("page", "1")
+	page, err = strconv.Atoi(pageStr)
+	if err != nil {
+		handleResponse(c, "error while parsing page", http.StatusBadRequest, err.Error())
+		return
 	}
 
-	if len(values["limit"]) > 0 {
-		limit, err = strconv.Atoi(values["limit"][0])
-		if err != nil {
-			fmt.Println("limit", values["limit"])
-			limit = 10
-		}
+	limitStr := c.DefaultQuery("limit", "10")
+	limit, err = strconv.Atoi(limitStr)
+	if err != nil {
+		handleResponse(c, "error while parsing limit", http.StatusBadRequest, err.Error())
+		return
 	}
 
-	if values["search"][0] != "" {
-		search = values["search"][0]
-	}else{
-		search = ""
-	}
-	resp, err := h.Store.Sale().GetList(models.GetListRequest{
+	search = c.Query("search")
+
+	resp, err := h.Store.Sale().GetList(context.Background(),models.GetListRequest{
 		Page:   page,
 		Limit:  limit,
 		Search: search,
@@ -110,53 +119,76 @@ func (h Handler) GetSaleList(w http.ResponseWriter, r *http.Request) {
 
 		 
 	if err != nil {
-		hanldeResponse(w, http.StatusInternalServerError, err)
+		handleResponse(c, "Error  in handlers, while getting sales!",http.StatusInternalServerError, err.Error())
 		return
 	}
 
-	hanldeResponse(w, http.StatusOK, resp)
+	handleResponse(c, "",http.StatusOK, resp)
 }
 
-func (h Handler) UpdateSale(w http.ResponseWriter, r *http.Request) {
+// UpdateSale godoc
+// @Router       /sale/{id} [PUT]
+// @Summary      Update sale
+// @Description  update sale
+// @Tags         sale
+// @Accept       json
+// @Produce      json
+// @Param 		 id path string true "sale_id"
+// @Param 		 sale body models.UpdateSale false "sale"
+// @Success      200  {object}  models.Sale
+// @Failure      400  {object}  models.Response
+// @Failure      404  {object}  models.Response
+// @Failure      500  {object}  models.Response
+func (h Handler) UpdateSale(c *gin.Context) {
 	updateSale := models.UpdateSale{}
 
-	if err := json.NewDecoder(r.Body).Decode(&updateSale); err != nil {
-		hanldeResponse(w, http.StatusBadRequest, err.Error())
-		return
-	}
+	uid := c.Param("id")
 
-	pKey, err := h.Store.Sale().Update(updateSale)
+	if uid == ""{
+		handleResponse(c, "invalid uuid!", http.StatusBadRequest,errors.New("uuid is not valid"))
+		return
+	 }
+ 
+	 updateSale.ID = uid
+
+	pKey, err := h.Store.Sale().Update(context.Background(),updateSale)
 	if err != nil {
-		hanldeResponse(w, http.StatusInternalServerError, err.Error())
+		handleResponse(c, "Error in handlers, while updating sale!",http.StatusInternalServerError, err.Error())
 		return
 	}
 
-	sale, err := h.Store.Sale().GetByID(models.PrimaryKey{
+	sale, err := h.Store.Sale().GetByID(context.Background(),models.PrimaryKey{
 		ID: pKey,
 	})
 	if err != nil {
-		hanldeResponse(w, http.StatusInternalServerError, err)
+		handleResponse(c, "Error in handlers, while selecting sale by id!",http.StatusInternalServerError, err.Error())
 		return
 	}
 
-	hanldeResponse(w, http.StatusOK, sale)
+	handleResponse(c, "",http.StatusOK, sale)
 }
 
-func (h Handler) DeleteSale(w http.ResponseWriter, r *http.Request) {
-	values := r.URL.Query()
-	if len(values["id"]) <= 0 {
-		hanldeResponse(w, http.StatusBadRequest, errors.New("id is required"))
-		return
-	}
+// DeleteSale godoc
+// @Router       /sale/{id} [DELETE]
+// @Summary      Delete sale
+// @Description  delete sale
+// @Tags         sale
+// @Accept       json
+// @Produce      json
+// @Param 		 id path string true "sale_id"
+// @Success      200  {object}  models.Response
+// @Failure      400  {object}  models.Response
+// @Failure      404  {object}  models.Response
+// @Failure      500  {object}  models.Response
+func (h Handler) DeleteSale(c *gin.Context) {
+	uid := c.Param("id") 
 
-	id := values["id"][0]
-
-	err := h.Store.Sale().Delete(models.PrimaryKey{
-		ID: id,
+	err := h.Store.Sale().Delete(context.Background(),models.PrimaryKey{
+		ID: uid,
 	})
 	if err != nil{
-		hanldeResponse(w, http.StatusInternalServerError, err.Error())
+		handleResponse(c, "Error in handlers, while deleting sale!",http.StatusInternalServerError, err.Error())
 		return
 	}
-	hanldeResponse(w, http.StatusOK, "data successfully deleted")
+	handleResponse(c, "",http.StatusOK, "data successfully deleted")
 }

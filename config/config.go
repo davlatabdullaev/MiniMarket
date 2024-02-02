@@ -1,11 +1,10 @@
 package config
 
 import (
-	// "fmt"
+	"fmt"
 	"os"
-
-	// "github.com/lpernett/godotenv"
-	// "github.com/spf13/cast"
+	"github.com/lpernett/godotenv"
+	"github.com/spf13/cast"
 )
 
 type Config struct {
@@ -18,24 +17,24 @@ type Config struct {
 
 func Load() Config{
 
-	// err := godotenv.Load()
-	// if err != nil{
-	// 	fmt.Println("error while loading godotenv!")
-	// }
+	err := godotenv.Load()
+	if err != nil{
+		fmt.Println("Error while loading godotenv!")
+	}
 
 	cfg := Config{}
 
-	// cfg.PostgresHost = cast.ToString(getOrReturnDefault("POSTGRES_HOST","localhost"))
-	// cfg.PostgresPort = cast.ToString(getOrReturnDefault("POSTGRES_PORT","5432"))
-	// cfg.PostgresUser = cast.ToString(getOrReturnDefault("POSTGRES_USER","my_user"))
-	// cfg.PostgresPassword = cast.ToString(getOrReturnDefault("POSTGRES_PASSWORD","your_password"))
-	// cfg.PostgresDB = cast.ToString(getOrReturnDefault("POSTGRES_DB", "your_database"))
+	cfg.PostgresHost = cast.ToString(getOrReturnDefault("POSTGRES_HOST","localhost1"))
+	cfg.PostgresPort = cast.ToString(getOrReturnDefault("POSTGRES_PORT","5432"))
+	cfg.PostgresUser = cast.ToString(getOrReturnDefault("POSTGRES_USER","my_user"))
+	cfg.PostgresPassword = cast.ToString(getOrReturnDefault("POSTGRES_PASSWORD","your_password"))
+	cfg.PostgresDB = cast.ToString(getOrReturnDefault("POSTGRES_DB", "your_database"))
 	
-		cfg.PostgresHost = "localhost"
-		cfg.PostgresPort = "5432"
-		cfg.PostgresUser = "the_khoji"
-		cfg.PostgresPassword = "546944"
-		cfg.PostgresDB = "mini_market"
+		// cfg.PostgresHost = "localhost"
+		// cfg.PostgresPort = "5432"
+		// cfg.PostgresUser = "the_khoji"
+		// cfg.PostgresPassword = "546944"
+		// cfg.PostgresDB = "mini_market"
 
 	return cfg
 }

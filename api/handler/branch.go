@@ -1,111 +1,118 @@
 package handler
 
 import (
+	"context"
 	"developer/api/models"
-	"encoding/json"
 	"errors"
-	"fmt"
 	"net/http"
 	"strconv"
+
+	"github.com/gin-gonic/gin"
 )
 
-func (h Handler) Branch(w http.ResponseWriter, r *http.Request) {
-	switch r.Method {
-	case http.MethodPost:
-		h.CreateBranch(w, r)
-	case http.MethodGet:
-		values := r.URL.Query()
-		_, ok := values["id"]
-		if !ok {
-			h.GetBranchList(w, r)
-		} else {
-			h.GetBranchByID(w, r)
-		}
-	case http.MethodPut:
-		h.UpdateBranch(w, r)
-	case http.MethodDelete:
-		h.DeleteBranch(w, r)
-	}
-}
 
-func (h Handler) CreateBranch(w http.ResponseWriter, r *http.Request) {
+// CreateBranch godoc
+// @Router       /branch [POST]
+// @Summary      Creates a new branch
+// @Description  create a new branch
+// @Tags         branch
+// @Accept       json
+// @Produce      json
+// @Param        branch body models.CreateBranch false "branch"
+// @Success      201  {object}  models.Branch
+// @Failure      400  {object}  models.Response
+// @Failure      404  {object}  models.Response
+// @Failure      500  {object}  models.Response
+func (h Handler) CreateBranch(c *gin.Context) {
 	createBranch := models.CreateBranch{}
 	
-	if err := json.NewDecoder(r.Body).Decode(&createBranch); err != nil {
-		hanldeResponse(w, http.StatusBadRequest, err)
-		return
+	err := c.ShouldBindJSON(&createBranch)
+	if err != nil{
+		handleResponse(c,"Error in handlers, while reading branch!",http.StatusBadRequest,err.Error())
 	}
 
-	pKey, err := h.Store.Branch().Create(createBranch)
+	pKey, err := h.Store.Branch().Create(context.Background(),createBranch)
 	if err != nil {
-		hanldeResponse(w, http.StatusInternalServerError, err)
+		handleResponse(c, "Error in handlers, while creating branch!" ,http.StatusInternalServerError, err)
 		return
 	}
 
-	sale, err := h.Store.Branch().GetByID(models.PrimaryKey{
+	branch, err := h.Store.Branch().GetByID(context.Background(),models.PrimaryKey{
 		ID: pKey,
 	})
 	if err != nil {
-		hanldeResponse(w, http.StatusInternalServerError, err)
+		handleResponse(c, "Error in handlers, while getting branch by id!",http.StatusInternalServerError, err)
 		return
 	}
 
-	hanldeResponse(w, http.StatusCreated, sale)
+	handleResponse(c, "" ,http.StatusCreated, branch)
 }
 
-func (h Handler) GetBranchByID(w http.ResponseWriter, r *http.Request) {
-	values := r.URL.Query()
-	if len(values["id"]) <= 0 {
-		hanldeResponse(w, http.StatusBadRequest, errors.New("id is required"))
-		return
-	}
-	
-	id := values["id"][0]
-	var err error
+// GetBranch godoc
+// @Router       /branch/{id} [GET]
+// @Summary      Get branch by id
+// @Description  get branch by id
+// @Tags         branch
+// @Accept       json
+// @Produce      json
+// @Param        id path string true "branch_id"
+// @Success      201  {object}  models.Branch
+// @Failure      400  {object}  models.Response
+// @Failure      404  {object}  models.Response
+// @Failure      500  {object}  models.Response
+func (h Handler) GetBranchByID(c *gin.Context) {
+	 uid := c.Param("id")
 
-	sale, err := h.Store.Branch().GetByID(models.PrimaryKey{
-		ID: id,
+	branch, err := h.Store.Branch().GetByID(context.Background(),models.PrimaryKey{
+		ID: uid,
 	})
 	if err != nil {
-		hanldeResponse(w, http.StatusInternalServerError, err)
+		handleResponse(c, "Error in handlers, while gettin basket by id!" ,http.StatusInternalServerError, err)
 		return
 	}
 
-	hanldeResponse(w, http.StatusOK, sale)
+	handleResponse(c, "",http.StatusOK, branch)
 }
 
-func (h Handler) GetBranchList(w http.ResponseWriter, r *http.Request) {
+// GetBranchList godoc
+// @Router       /branches [GET]
+// @Summary      Get branch list
+// @Description  get branch list
+// @Tags         branch
+// @Accept       json
+// @Produce      json
+// @Param        page query string false "page"
+// @Param        limit query string false "limit"
+// @Param        search query string false "search"
+// @Success      201  {object}  models.BranchesResponse
+// @Failure      400  {object}  models.Response
+// @Failure      404  {object}  models.Response
+// @Failure      500  {object}  models.Response
+func (h Handler) GetBranchList(c *gin.Context) {
 	var (
 		search string
 		page, limit = 1, 10
 		err         error
 	)
-	values := r.URL.Query()
-
-	if len(values["page"]) > 0 {
-		page, err = strconv.Atoi(values["page"][0])
-		if err != nil {
-			page = 1
-		}
+	pageStr := c.DefaultQuery("page", "1")
+	page, err = strconv.Atoi(pageStr)
+	if err != nil {
+		handleResponse(c, "error while parsing page", http.StatusBadRequest, err.Error())
+		return
 	}
 
-	if len(values["limit"]) > 0 {
-		limit, err = strconv.Atoi(values["limit"][0])
-		if err != nil {
-			fmt.Println("limit", values["limit"])
-			limit = 10
-		}
+	limitStr := c.DefaultQuery("limit", "10")
+	limit, err = strconv.Atoi(limitStr)
+	if err != nil {
+		handleResponse(c, "error while parsing limit", http.StatusBadRequest, err.Error())
+		return
 	}
 
-	if values["search"][0] != ""{
-		search = values["search"][0]
-	}else{
-		search = ""
-	}
+	search = c.Query("search")
 
 	
 
-	resp, err := h.Store.Branch().GetList(models.GetListRequest{
+	resp, err := h.Store.Branch().GetList(context.Background(),models.GetListRequest{
 		Page:   page,
 		Limit:  limit,
 		Search: search,
@@ -113,53 +120,76 @@ func (h Handler) GetBranchList(w http.ResponseWriter, r *http.Request) {
 
 		 
 	if err != nil {
-		hanldeResponse(w, http.StatusInternalServerError, err)
+		handleResponse(c, "Error in handlers, while getting branches!",http.StatusInternalServerError, err)
 		return
 	}
 
-	hanldeResponse(w, http.StatusOK, resp)
+	handleResponse(c, "",http.StatusOK, resp)
 }
 
-func (h Handler) UpdateBranch(w http.ResponseWriter, r *http.Request) {
+// UpdateBranch godoc
+// @Router       /branch/{id} [PUT]
+// @Summary      Update branch
+// @Description  update branch
+// @Tags         branch
+// @Accept       json
+// @Produce      json
+// @Param        id path string true "branch_id"
+// @Param        branch body models.UpdateBranch false "branch"
+// @Success      201  {object}  models.Branch
+// @Failure      400  {object}  models.Response
+// @Failure      404  {object}  models.Response
+// @Failure      500  {object}  models.Response
+func (h Handler) UpdateBranch(c *gin.Context) {
 	updateBranch := models.UpdateBranch{}
 
-	if err := json.NewDecoder(r.Body).Decode(&updateBranch); err != nil {
-		hanldeResponse(w, http.StatusBadRequest, err.Error())
-		return
-	}
+	uid := c.Param("id")
 
-	pKey, err := h.Store.Branch().Update(updateBranch)
+	if uid == ""{
+		handleResponse(c, "invalid uuid!", http.StatusBadRequest,errors.New("uuid is not valid"))
+		return
+	 }
+ 
+	 updateBranch.ID = uid
+
+	pKey, err := h.Store.Branch().Update(context.Background(),updateBranch)
 	if err != nil {
-		hanldeResponse(w, http.StatusInternalServerError, err.Error())
+		handleResponse(c, "Error in handlers, while updating branch!",http.StatusInternalServerError, err.Error())
 		return
 	}
 
-	branch, err := h.Store.Branch().GetByID(models.PrimaryKey{
+	branch, err := h.Store.Branch().GetByID(context.Background(),models.PrimaryKey{
 		ID: pKey,
 	})
 	if err != nil {
-		hanldeResponse(w, http.StatusInternalServerError, err)
+		handleResponse(c, "Error in handlers, while getting branch!",http.StatusInternalServerError, err.Error())
 		return
 	}
 
-	hanldeResponse(w, http.StatusOK, branch)
+	handleResponse(c, "",http.StatusOK, branch)
 }
 
-func (h Handler) DeleteBranch(w http.ResponseWriter, r *http.Request) {
-	values := r.URL.Query()
-	if len(values["id"]) <= 0 {
-		hanldeResponse(w, http.StatusBadRequest, errors.New("id is required"))
-		return
-	}
+// DeleteBranch godoc
+// @Router       /branch/{id} [Delete]
+// @Summary      Delete branch
+// @Description  delete branch
+// @Tags         branch
+// @Accept       json
+// @Produce      json
+// @Param        id path string true "branch_id"
+// @Success      201  {object}  models.Response
+// @Failure      400  {object}  models.Response
+// @Failure      404  {object}  models.Response
+// @Failure      500  {object}  models.Response
+func (h Handler) DeleteBranch(c *gin.Context) {
+	uid := c.Param("id")
 
-	id := values["id"][0]
-
-	err := h.Store.Branch().Delete(models.PrimaryKey{
-		ID: id,
+	err := h.Store.Branch().Delete(context.Background(),models.PrimaryKey{
+		ID: uid,
 	})
 	if err != nil{
-		hanldeResponse(w, http.StatusInternalServerError, err.Error())
+		handleResponse(c, "Error in handlers, while deleting branch!",http.StatusInternalServerError, err.Error())
 		return
 	}
-	hanldeResponse(w, http.StatusOK, "data successfully deleted")
+	handleResponse(c, "",http.StatusOK, "data successfully deleted")
 }

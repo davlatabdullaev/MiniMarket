@@ -11,9 +11,9 @@ type Sale struct {
 	Price             uint`json:"price"`
 	Status          string`json:"status"`
 	ClientName      string`json:"client_name"`
-	CreatedAt       string`json:"created_at"`
-	UpdatedAt       string`json:"updated_at"`
-	DeletedAt       string`json:"deleted_at"`
+	CreatedAt       time.Time`json:"created_at"`
+	UpdatedAt       time.Time`json:"updated_at"`
+	DeletedAt       time.Time`json:"deleted_at"`
 }
 
 type CreateSale struct {
@@ -24,9 +24,6 @@ type CreateSale struct {
 	Price             uint`json:"price"`
 	Status          string`json:"status"`
 	ClientName      string`json:"client_name"`
-	CreatedAt       string`json:"created_at"`
-	UpdatedAt       string`json:"updated_at"`
-	DeletedAt       string`json:"deleted_at"`
 }
 
 type UpdateSale struct {
@@ -38,7 +35,6 @@ type UpdateSale struct {
 	Price             uint`json:"price"`
 	Status          string`json:"status"`
 	ClientName      string`json:"client_name"`
-	UpdatedAt       time.Time`json:"updated_at"`
 }
 
 type SalesResponse struct {

@@ -1,154 +1,192 @@
 package handler
 
 import (
+	"context"
 	"developer/api/models"
-	"encoding/json"
 	"errors"
-	"fmt"
 	"net/http"
 	"strconv"
+	"github.com/gin-gonic/gin"
 )
 
-func (h Handler) Basket(w http.ResponseWriter, r *http.Request) {
-	switch r.Method {
-	case http.MethodPost:
-		h.CreateBasket(w, r)
-	case http.MethodGet:
-		values := r.URL.Query()
-		_, ok := values["id"]
-		if !ok {
-			h.GetBasketList(w, r)
-		} else {
-			h.GetBasketByID(w, r)
-		}
-	case http.MethodPut:
-		h.UpdateBasket(w, r)
-	case http.MethodDelete:
-		h.DeleteBasket(w, r)
-	}
-}
 
-func (h Handler) CreateBasket(w http.ResponseWriter, r *http.Request) {
+// CreateBasket godoc
+// @Router       /basket [POST]
+// @Summary      Creates a new basket
+// @Description  create a new basket
+// @Tags         basket
+// @Accept       json
+// @Produce      json
+// @Param        basket body models.CreateBasket false "basket"
+// @Success      201  {object}  models.Basket
+// @Failure      400  {object}  models.Response
+// @Failure      404  {object}  models.Response
+// @Failure      500  {object}  models.Response
+func (h Handler) CreateBasket(c *gin.Context) {
 	createBasket := models.CreateBasket{}
 	
-	if err := json.NewDecoder(r.Body).Decode(&createBasket); err != nil {
-		hanldeResponse(w, http.StatusBadRequest, err)
-		return
+	err := c.ShouldBindHeader(&createBasket)
+	if err != nil{
+		handleResponse(c,"Error in handler, while reading basket from json!",http.StatusBadRequest, err.Error())
 	}
 
-	pKey, err := h.Store.Basket().Create(createBasket)
+	pKey, err := h.Store.Basket().Create(context.Background(),createBasket)
 	if err != nil {
-		hanldeResponse(w, http.StatusInternalServerError, err)
+		handleResponse(c,"Error in handlers, while creating basket!", http.StatusInternalServerError, err)
 		return
 	}
 
-	basket, err := h.Store.Basket().GetByID(models.PrimaryKey{
+	basket, err := h.Store.Basket().GetByID(context.Background(),models.PrimaryKey{
 		ID: pKey,
 	})
 	if err != nil {
-		hanldeResponse(w, http.StatusInternalServerError, err)
+		handleResponse(c, "Error in handlers, while getting user by id!" ,http.StatusInternalServerError, err)
 		return
 	}
 
-	hanldeResponse(w, http.StatusCreated, basket)
+	handleResponse(c, "",http.StatusCreated, basket)
 }
 
-func (h Handler) GetBasketByID(w http.ResponseWriter, r *http.Request) {
-	values := r.URL.Query()
-	if len(values["id"]) <= 0 {
-		hanldeResponse(w, http.StatusBadRequest, errors.New("id is required"))
-		return
-	}
+// GetBasket godoc
+// @Router       /basket/{id} [GET]
+// @Summary      Get basket by id
+// @Description  get basket by id
+// @Tags         basket
+// @Accept       json
+// @Produce      json
+// @Param        id path string true "basket_id"
+// @Success      201  {object}  models.Basket
+// @Failure      400  {object}  models.Response
+// @Failure      404  {object}  models.Response
+// @Failure      500  {object}  models.Response
+func (h Handler) GetBasketByID(c *gin.Context) {
+	 
+	uid := c.Param("id")
 
-	id := values["id"][0]
-	var err error
-
-	basket, err := h.Store.Basket().GetByID(models.PrimaryKey{
-		ID: id,
+	basket, err := h.Store.Basket().GetByID(context.Background(),models.PrimaryKey{
+		ID: uid,
 	})
 	if err != nil {
-		hanldeResponse(w, http.StatusInternalServerError, err)
+		handleResponse(c, "Error in handlers, while getting user by id" ,http.StatusInternalServerError, err)
 		return
 	}
 
-	hanldeResponse(w, http.StatusOK, basket)
+	handleResponse(c, "" ,http.StatusOK, basket)
 }
 
-func (h Handler) GetBasketList(w http.ResponseWriter, r *http.Request) {
+// GetBasketList godoc
+// @Router       /baskets [GET]
+// @Summary      Get basket list
+// @Description  get basket list
+// @Tags         basket
+// @Accept       json
+// @Produce      json
+// @Param        page query string false "page"
+// @Param        limit query string false "limit"
+// @Success      201  {object}  models.BasketsResponse
+// @Failure      400  {object}  models.Response
+// @Failure      404  {object}  models.Response
+// @Failure      500  {object}  models.Response
+func (h Handler) GetBasketList(c *gin.Context) {
 	var (
 		page, limit = 1, 10
 		err         error
 	)
-	values := r.URL.Query()
 
-	if len(values["page"]) > 0 {
-		page, err = strconv.Atoi(values["page"][0])
-		if err != nil {
-			page = 1
-		}
+	pageStr := c.DefaultQuery("page", "1")
+	page, err = strconv.Atoi(pageStr)
+	if err != nil {
+		handleResponse(c, "error while parsing page", http.StatusBadRequest, err.Error())
+		return
 	}
 
-	if len(values["limit"]) > 0 {
-		limit, err = strconv.Atoi(values["limit"][0])
-		if err != nil {
-			fmt.Println("limit", values["limit"])
-			limit = 10
-		}
+	limitStr := c.DefaultQuery("limit", "10")
+	limit, err = strconv.Atoi(limitStr)
+	if err != nil {
+		handleResponse(c, "error while parsing limit", http.StatusBadRequest, err.Error())
+		return
 	}
-	resp, err := h.Store.Sale().GetList(models.GetListRequest{
+	resp, err := h.Store.Basket().GetList(context.Background(),models.GetListRequest{
 		Page:   page,
 		Limit:  limit,
 	})
 
 		 
 	if err != nil {
-		hanldeResponse(w, http.StatusInternalServerError, err)
+		handleResponse(c, "Error in handlers, while getting baskets, " ,http.StatusInternalServerError, err)
 		return
 	}
 
-	hanldeResponse(w, http.StatusOK, resp)
+	handleResponse(c, "",http.StatusOK, resp)
 }
 
-func (h Handler) UpdateBasket(w http.ResponseWriter, r *http.Request) {
+// UpdateBasket godoc
+// @Router       /basket/{id} [PUT]
+// @Summary      Update basket
+// @Description  update basket
+// @Tags         basket
+// @Accept       json
+// @Produce      json
+// @Param        id path string true "basket_id"
+// @Param        basket body models.UpdateBasket false "basket"
+// @Success      201  {object}  models.Basket
+// @Failure      400  {object}  models.Response
+// @Failure      404  {object}  models.Response
+// @Failure      500  {object}  models.Response
+func (h Handler) UpdateBasket(c *gin.Context) {
 	updateBasket := models.UpdateBasket{}
 
-	if err := json.NewDecoder(r.Body).Decode(&updateBasket); err != nil {
-		hanldeResponse(w, http.StatusBadRequest, err.Error())
-		return
+	uid := c.Param("id")
+	if uid == ""{
+	   handleResponse(c, "invalid uuid!", http.StatusBadRequest,errors.New("uuid is not valid"))
+	   return
 	}
 
-	pKey, err := h.Store.Basket().Update(updateBasket)
+	updateBasket.ID = uid
+
+	err := c.ShouldBindJSON(&updateBasket)
+	if err != nil{
+		handleResponse(c,"Error in handlers, while reading body for udatebasket!", http.StatusBadRequest,err.Error())
+	}
+
+	pKey, err := h.Store.Basket().Update(context.Background(),updateBasket)
 	if err != nil {
-		hanldeResponse(w, http.StatusInternalServerError, err.Error())
+		handleResponse(c, "Error in handlers, while updating basket!",http.StatusInternalServerError, err.Error())
 		return
 	}
 
-	basket, err := h.Store.Basket().GetByID(models.PrimaryKey{
+	basket, err := h.Store.Basket().GetByID(context.Background(),models.PrimaryKey{
 		ID: pKey,
 	})
 	if err != nil {
-		hanldeResponse(w, http.StatusInternalServerError, err)
+		handleResponse(c, "Error in handlers, while getting basket by id!" ,http.StatusInternalServerError, err.Error())
 		return
 	}
 
-	hanldeResponse(w, http.StatusOK, basket)
+	handleResponse(c, "",http.StatusOK, basket)
 }
 
-func (h Handler) DeleteBasket(w http.ResponseWriter, r *http.Request) {
-	values := r.URL.Query()
-	if len(values["id"]) <= 0 {
-		hanldeResponse(w, http.StatusBadRequest, errors.New("id is required"))
-		return
-	}
+// DeleteBasket godoc
+// @Router       /basket/{id} [Delete]
+// @Summary      Delete basket
+// @Description  delete basket
+// @Tags         basket
+// @Accept       json
+// @Produce      json
+// @Param        id path string true "basket_id"
+// @Success      201  {object}  models.Response
+// @Failure      400  {object}  models.Response
+// @Failure      404  {object}  models.Response
+// @Failure      500  {object}  models.Response
+func (h Handler) DeleteBasket(c *gin.Context) {
+	uid := c.Param("id")
 
-	id := values["id"][0]
-
-	err := h.Store.Basket().Delete(models.PrimaryKey{
-		ID: id,
+	err := h.Store.Basket().Delete(context.Background(),models.PrimaryKey{
+		ID: uid,
 	})
 	if err != nil{
-		hanldeResponse(w, http.StatusInternalServerError, err.Error())
+		handleResponse(c, "Error in handlers, while deleting basket!",http.StatusInternalServerError, err.Error())
 		return
 	}
-	hanldeResponse(w, http.StatusOK, "data successfully deleted")
+	handleResponse(c,"", http.StatusOK, "data successfully deleted")
 }

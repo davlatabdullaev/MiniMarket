@@ -1,33 +1,27 @@
 package main
 
 import (
+	"context"
+	"log"
 	"developer/api"
-	"developer/api/handler"
 	"developer/config"
 	"developer/storage/postgres"
-	"fmt"
-	"log"
-	"net/http"
 )
 
 func main() {
 	cfg := config.Load()
 
-	store, err := postgres.New(cfg)
+	pgStore, err := postgres.New(context.Background(), cfg)
 	if err != nil {
-		log.Fatalln("error while connecting to db err:", err.Error())
+		log.Fatalln("Error while connecting to db err:", err.Error())
 		return
 	}
-	fmt.Println("success")
-	
-	defer store.Close()
+	defer pgStore.Close()
 
-	handler := handler.New(store)
+	server := api.New(pgStore)
 
-	api.New(handler)
-
-	fmt.Println("Server is running on port 8080")
-	if err = http.ListenAndServe(":8080", nil); err != nil {
-		log.Fatalln("error while running server err:", err.Error())
+	err = server.Run("localhost:8080")
+	if err != nil {
+		panic(err)
 	}
 }
