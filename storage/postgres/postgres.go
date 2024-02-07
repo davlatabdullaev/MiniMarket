@@ -68,3 +68,23 @@ func (s Store) Basket() storage.IBasket {
 func (s Store) Storage() storage.IStorage {
 	return NewStorageRepo(s.Pool)
 }
+//New
+func (s Store) Staff() storage.IStaff{
+	return NewStaffRepo(s.Pool)
+}
+
+func (s Store) Tarif() storage.ITarif{
+	return NewTarifRepo(s.Pool)
+}
+
+func (s Store) Category() storage.ICategory {
+	return NewCategoryRepo(s.Pool)
+}
+
+func (s Store) Transaction() storage.ITransaction {
+	return NewTransactionRepo(s.Pool)
+}
+
+func (s Store) StorageTransaction()storage.IStorageTransaction  {
+	return NewStorageTransactionRepo(s.Pool)
+}

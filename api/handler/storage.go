@@ -84,7 +84,7 @@ func (h Handler) GetStorageByID(c *gin.Context) {
 // @Param 		 page query string false "page"
 // @Param 		 limit query string false "limit"
 // @Param 		 search query string false "search"
-// @Success      200  {object}  models.Storage
+// @Success      200  {object}  models.StoragesResponse
 // @Failure      400  {object}  models.Response
 // @Failure      404  {object}  models.Response
 // @Failure      500  {object}  models.Response
@@ -150,6 +150,12 @@ func (h Handler) UpdateStorage(c *gin.Context) {
 	 }
  
 	 updateStorage.ID = uid
+
+	 err := c.ShouldBindJSON(&updateStorage)
+	 if err != nil{
+		handleResponse(c,"Error in handlers, while reading storage json from client!",http.StatusBadRequest,err)
+		return
+	 }
 
 	pKey, err := h.Store.Storage().Update(context.Background(),updateStorage)
 	if err != nil {

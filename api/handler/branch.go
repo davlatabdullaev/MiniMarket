@@ -67,7 +67,7 @@ func (h Handler) GetBranchByID(c *gin.Context) {
 		ID: uid,
 	})
 	if err != nil {
-		handleResponse(c, "Error in handlers, while gettin basket by id!" ,http.StatusInternalServerError, err)
+		handleResponse(c, "Error in handlers, while getting branch by id!" ,http.StatusInternalServerError, err)
 		return
 	}
 
@@ -151,6 +151,12 @@ func (h Handler) UpdateBranch(c *gin.Context) {
 	 }
  
 	 updateBranch.ID = uid
+
+	 err := c.ShouldBindJSON(&updateBranch)
+	 if err != nil{
+		handleResponse(c,"Error in handlers, while reading branch json from client!",http.StatusBadRequest,err)
+		return
+	 }
 
 	pKey, err := h.Store.Branch().Update(context.Background(),updateBranch)
 	if err != nil {

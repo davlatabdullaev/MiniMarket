@@ -5,17 +5,17 @@ import "time"
 type Product struct {
 	ID	   	   string`json:"id"`
 	Name       string`json:"name"`
-	Price      string`json:"price"`
+	Price         int`json:"price"`
 	BarCode    string`json:"bar_code"`
 	CategoryID string`json:"category_id"`
-	CreatedAt  time.Time`json:"created_at"`
-	UpdatedAt  time.Time`json:"updated_at"`
-	DeletedAt  time.Time`json:"deleted_at"`
+	CreatedAt time.Time`json:"created_at"` 
+	UpdatedAt time.Time`json:"updated_at"`
+	DeletedAt time.Time`json:"deleted_at"`
 }
 
 type CreateProduct struct {
 	Name       string`json:"name"`
-	Price      string`json:"price"`
+	Price      	  int`json:"price"`
 	BarCode    string`json:"bar_code"`
 	CategoryID string`json:"category_id"`
 }
@@ -23,7 +23,7 @@ type CreateProduct struct {
 type UpdateProduct struct {
 	ID 		   string`json:"id"`
 	Name       string`json:"name"`
-	Price      string`json:"price"`
+	Price         int`json:"price"`
 	CategoryID string`json:"category_id"`
 }
 

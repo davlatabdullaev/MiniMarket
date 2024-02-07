@@ -14,6 +14,11 @@ type IfStorage interface {
 	Basket() IBasket
 	Product() IProduct
 	Storage() IStorage
+	Tarif() ITarif
+	Category() ICategory
+	Staff() IStaff
+	Transaction() ITransaction
+	StorageTransaction() IStorageTransaction
 }
 
 type IBranch interface {
@@ -52,5 +57,45 @@ type IStorage interface {
 	GetByID(context.Context,models.PrimaryKey) (models.Storage, error)
 	GetList(context.Context,models.GetListRequest) (models.StoragesResponse, error)
 	Update(context.Context,models.UpdateStorage) (string, error)
+	Delete(context.Context,models.PrimaryKey) error
+}
+
+type ICategory interface {
+	Create(context.Context,models.CreateCategory) (string, error)
+	GetByID(context.Context,models.PrimaryKey) (models.Category, error)
+	GetList(context.Context,models.GetListRequest) (models.CategoriesResponse, error)
+	Update(context.Context,models.UpdateCategory) (string, error)
+	Delete(context.Context,models.PrimaryKey) error
+}
+
+type IStaff interface {
+	Create(context.Context,models.CreateStaff) (string, error)
+	GetByID(context.Context,models.PrimaryKey) (models.Staff, error)
+	GetList(context.Context,models.GetListRequest) (models.StaffsResponse, error)
+	Update(context.Context,models.UpdateStaff) (string, error)
+	Delete(context.Context,models.PrimaryKey) error
+}
+
+type IStorageTransaction interface {
+	Create(context.Context,models.CreateStorageTransaction) (string, error)
+	GetByID(context.Context,models.PrimaryKey) (models.StorageTransaction, error)
+	GetList(context.Context,models.GetListRequest) (models.StorageTransactionsResponse, error)
+	Update(context.Context,models.UpdateStorageTransaction) (string, error)
+	Delete(context.Context,models.PrimaryKey) error
+}
+
+type ITarif interface {
+	Create(context.Context,models.CreateTarif) (string, error)
+	GetByID(context.Context,models.PrimaryKey) (models.Tarif, error)
+	GetList(context.Context,models.GetListRequest) (models.TarifsResponse, error)
+	Update(context.Context,models.UpdateTarif) (string, error)
+	Delete(context.Context,models.PrimaryKey) error
+}
+
+type ITransaction interface {
+	Create(context.Context,models.CreateTransaction) (string, error)
+	GetByID(context.Context,models.PrimaryKey) (models.Transaction, error)
+	GetList(context.Context,models.GetListRequest) (models.TransactionsResponse, error)
+	Update(context.Context,models.UpdateTransaction) (string, error)
 	Delete(context.Context,models.PrimaryKey) error
 }

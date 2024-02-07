@@ -6,7 +6,7 @@ type Branch struct {
 	ID 	      string`json:"id"`
 	Name      string`json:"name"`
 	Address   string`json:"address"`
-	CreatedAt time.Time`json:"created_at"`
+	CreatedAt time.Time`json:"created_at"` 
 	UpdatedAt time.Time`json:"updated_at"`
 	DeletedAt time.Time`json:"deleted_at"`
 }
@@ -14,7 +14,6 @@ type Branch struct {
 type CreateBranch struct {
 	Name      string`json:"name"`
 	Address   string`json:"address"`
-	CreatedAt string`json:"created_at"`
 }
 
 type UpdateBranch struct {

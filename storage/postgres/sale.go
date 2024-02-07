@@ -21,9 +21,9 @@ func NewSaleRepo(db *pgxpool.Pool) storage.ISale{
 
 func (s *saleRepo) Create(ctx context.Context,sale models.CreateSale)(string, error){
 	uid := uuid.New()
-	query := `INSERT INTO sales (id, branch_id, shop_assistant_id, cashier_id,
+	query := `INSERT INTO sales (id, branch_id, shop_assistent_id, chashier_id,
 			payment_type, price, status, client_name) 
-	values ($1,$2,$3,$4,5,$6,$7,$8)`
+	values ($1,$2,$3,$4,$5,$6,$7,$8)`
 	_, err := s.DB.Exec(ctx,query,
 		uid,
 		sale.BranchID,
@@ -44,8 +44,8 @@ func (s *saleRepo) Create(ctx context.Context,sale models.CreateSale)(string, er
 
 func (s *saleRepo) GetByID(ctx context.Context,pKey models.PrimaryKey)(models.Sale, error){
 	sale := models.Sale{}
-	query :=  `SELECT id, branch_id, shop_assistant_id,
-			cashier_id, payment_type, price, status, client_name,
+	query :=  `SELECT id, branch_id, shop_assistent_id,
+			chashier_id, payment_type, price, status, client_name,
 			created_at, updated_at from sales where id = $1`
 	err := s.DB.QueryRow(ctx,query,pKey.ID).Scan(
 		 &sale.ID,
@@ -90,16 +90,16 @@ func (s *saleRepo) GetList(ctx context.Context,request models.GetListRequest) (m
 		return models.SalesResponse{}, err
 	}
 
-	query = `SELECT id, branch_id, shop_assistant_id,
-	cashier_id, payment_type, price, status, client_name,
+	query = `SELECT id, branch_id, shop_assistent_id,
+	chashier_id, payment_type, price, status, client_name,
 	created_at, updated_at from sales`
 		
 	
 	if search != ""{
-		query += fmt.Sprintf(`WHERE (clent_name ilike '%%%s%%' OR payment_type ilike '%%%s%%)`,search, search)
+		query += fmt.Sprintf(` WHERE (clent_name ilike '%%%s%%' OR payment_type ilike '%%%s%%)`,search, search)
 	}
 
-	query += `LIMIT $1 OFFSET $2`
+	query += ` LIMIT $1 OFFSET $2`
 
 	rows, err := s.DB.Query(ctx,query,request.Limit,offset)
 	if err != nil{
@@ -136,9 +136,9 @@ func (s *saleRepo) GetList(ctx context.Context,request models.GetListRequest) (m
 }
 
 func (s *saleRepo) Update(ctx context.Context,sale models.UpdateSale)(string, error){
-	query :=  `UPDATE sales set branch_id = $1, shop_assistant_id = $2
-			cashier_id = $3, payment_type = $4, price = $5,
-			status = $6, client_name = $7
+	query :=  `UPDATE sales set branch_id = $1, shop_assistent_id = $2,
+			chashier_id = $3, payment_type = $4, price = $5,
+			status = $6, client_name = $7, updated_at = now()
 			WHERE id = $8`
 	_, err := s.DB.Exec(ctx,query,
 		sale.BranchID,
@@ -160,7 +160,7 @@ func (s *saleRepo) Update(ctx context.Context,sale models.UpdateSale)(string, er
 
 func (s *saleRepo) Delete(ctx context.Context, pKey models.PrimaryKey) error{
 	query := `DELETE from sales where id = $1`
-	_, err := s.DB.Exec(ctx,query,pKey)
+	_, err := s.DB.Exec(ctx,query,pKey.ID)
 	if err != nil{
 		fmt.Println("Error while deleting sale!", err.Error())
 		return err

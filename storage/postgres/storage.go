@@ -80,7 +80,7 @@ func (s *storageRepo) GetList(ctx context.Context,request models.GetListRequest)
 		created_at, updated_at from storage`
 
 
-	query += `LIMIT $1 OFFSET $2`
+	query += ` LIMIT $1 OFFSET $2`
 
 	rows, err := s.DB.Query(ctx,query,request.Limit,offset)
 	if err != nil{
@@ -113,7 +113,7 @@ func (s *storageRepo) GetList(ctx context.Context,request models.GetListRequest)
 }
 
 func (s *storageRepo) Update(ctx context.Context,updateStorage models.UpdateStorage)(string, error){
-	query :=  `UPDATE storage SET product_id = $1, branch_id = $2, count = $3 where id = $4`
+	query :=  `UPDATE storage SET product_id = $1, branch_id = $2, count = $3, updated_at = now() where id = $4`
 	uid, _ := uuid.Parse(updateStorage.ID)
 	_, err := s.DB.Exec(ctx,query,
 		 updateStorage.ProductID,
@@ -131,7 +131,7 @@ func (s *storageRepo) Update(ctx context.Context,updateStorage models.UpdateStor
 
 func (s *storageRepo) Delete(ctx context.Context,pKey models.PrimaryKey) error{
 	query := `DELETE from storage where id = $1`
-	_, err := s.DB.Exec(ctx,query,pKey)
+	_, err := s.DB.Exec(ctx,query,pKey.ID)
 	if err != nil{
 		fmt.Println("Error while deleting storage!", err.Error())
 		return err

@@ -21,7 +21,7 @@ func NewBranchRepo(db *pgxpool.Pool) storage.IBranch{
 
 func (b *branchRepo) Create(ctx context.Context, branch models.CreateBranch)(string, error){
 	uid := uuid.New()
-	query := `INSERT INTO branche (id, name, address) values ($1, $2, $3)`
+	query := `INSERT INTO branches (id, name, address) values ($1, $2, $3)`
 	_, err := b.DB.Exec(ctx, query,
 		uid,
 		branch.Name,
@@ -38,7 +38,7 @@ func (b *branchRepo) Create(ctx context.Context, branch models.CreateBranch)(str
 func (b *branchRepo) GetByID(ctx context.Context,pKey models.PrimaryKey)(models.Branch, error){
 	branch := models.Branch{}
 	query := `SELECT id, name, address, created_at, 
-	updated_at from branche where id = $1`
+	updated_at from branches where id = $1`
 	err := b.DB.QueryRow(ctx,query,pKey.ID).Scan(
 		&branch.ID,
 		&branch.Name,
@@ -65,7 +65,7 @@ func (b *branchRepo) GetList(ctx context.Context,request models.GetListRequest) 
 	)
 
 	countQuery = `
-	SELECT count(1) from branche`
+	SELECT count(1) from branches`
 
 	if search != ""{
 		countQuery += fmt.Sprintf(` WHERE (name ilike '%%%s%%' OR address ilike '%%%s%%')`, search, search)
@@ -78,14 +78,14 @@ func (b *branchRepo) GetList(ctx context.Context,request models.GetListRequest) 
 	}
 
 	query = `SELECT id, name, address, created_at, 
-	updated_at from branche`
+	updated_at from branches`
 		
 	
 	if search != ""{
-		query += fmt.Sprintf(`WHERE (name ilike '%%%s%%' OR address ilike '%%%s%%')`, search, search)
+		query += fmt.Sprintf(` WHERE (name ilike '%%%s%%' OR address ilike '%%%s%%')`, search, search)
 	}
 
-	query += `LIMIT $1 OFFSET $2`
+	query += ` LIMIT $1 OFFSET $2`
 
 	rows, err := b.DB.Query(ctx,query,request.Limit,offset)
 	if err != nil{
@@ -117,7 +117,7 @@ func (b *branchRepo) GetList(ctx context.Context,request models.GetListRequest) 
 }
 
 func (b *branchRepo) Update(ctx context.Context,branch models.UpdateBranch)(string, error){
-	query :=  `UPDATE branche set name = $1, address = $2 where id = $3`
+	query :=  `UPDATE branches set name = $1, address = $2, updated_at = now() where id = $3`
 	uid, _ := uuid.Parse(branch.ID)
 	_, err := b.DB.Exec(ctx, query,
 		branch.Name,
@@ -133,8 +133,8 @@ func (b *branchRepo) Update(ctx context.Context,branch models.UpdateBranch)(stri
 }
 
 func (b *branchRepo) Delete(ctx context.Context,pKey models.PrimaryKey) error{
-	query := `DELETE from branche where id = $1`
-	_, err := b.DB.Exec(ctx,query,pKey)
+	query := `DELETE from branches where id = $1`
+	_, err := b.DB.Exec(ctx,query,pKey.ID)
 	if err != nil{
 		fmt.Println("Error while deleting branch!", err.Error())
 		return err

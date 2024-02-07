@@ -5,7 +5,6 @@ import (
 	"developer/api/models"
 	"developer/storage"
 	"fmt"
-
 	"github.com/google/uuid"
 	"github.com/jackc/pgx/v5/pgxpool"
 )
@@ -22,7 +21,7 @@ func NewProductRepo (db *pgxpool.Pool) storage.IProduct{
 
 func (p *productRepo) Create(ctx context.Context,product models.CreateProduct)(string, error){
 	uid := uuid.New()
-	query := `INSERT INTO product (id, name, price, bar_code, category_id) values ($1, $2, $3, $4, $5)`
+	query := `INSERT INTO products (id, name, price, bar_code, category_id) values ($1, $2, $3, $4, $5)`
 	_, err := p.DB.Exec(ctx, query,
 		uid,
 		product.Name,
@@ -40,8 +39,8 @@ func (p *productRepo) Create(ctx context.Context,product models.CreateProduct)(s
 
 func (p *productRepo) GetByID(ctx context.Context, pKey models.PrimaryKey)(models.Product, error){
 	product := models.Product{}
-	query :=  `SELECT id, name, price, bar_code, category_id,
-			created_at, updated_at from product where id = $1`
+	query :=  `SELECT id, name, price, barcode, category_id,
+			created_at, updated_at from products where id = $1`
 	err := p.DB.QueryRow(ctx,query,pKey.ID).Scan(
 		&product.ID,
 		&product.Name,
@@ -70,7 +69,7 @@ func (p *productRepo) GetList(ctx context.Context, request models.GetListRequest
 	)
 
 	countQuery = `
-	SELECT count(1) from product`
+	SELECT count(1) from products`
 
 	if search != ""{
 		countQuery += fmt.Sprintf(` WHERE (name ilike '%%%s%%')`, search)
@@ -82,15 +81,15 @@ func (p *productRepo) GetList(ctx context.Context, request models.GetListRequest
 		return models.ProductsResponse{}, err
 	}
 
-	query =  `SELECT id, name, price, bar_code, category_id,
-			created_at, updated_at from product`
+	query =  `SELECT id, name, price, barcode, category_id,
+			created_at, updated_at from products `
 
 	
 	if search != ""{
 		query += fmt.Sprintf(`WHERE (name ilike '%%%s%%')`, search)
 	}
 
-	query += `LIMIT $1 OFFSET $2`
+	query += ` LIMIT $1 OFFSET $2`
 
 	rows, err := p.DB.Query(ctx,query,request.Limit,offset)
 	if err != nil{
@@ -124,7 +123,7 @@ func (p *productRepo) GetList(ctx context.Context, request models.GetListRequest
 }
 
 func (p *productRepo) Update(ctx context.Context, product models.UpdateProduct)(string, error){
-	query :=  `UPDATE product set name = $1, price = $2, category_id = $3 where id = $4`
+	query :=  `UPDATE products set name = $1, price = $2, category_id = $3, updated_at = now() where id = $4`
 	uid, _ := uuid.Parse(product.ID)
 	_, err := p.DB.Exec(ctx,query,
 		product.Name,
@@ -141,8 +140,8 @@ func (p *productRepo) Update(ctx context.Context, product models.UpdateProduct)(
 }
 
 func (b *productRepo) Delete(ctx context.Context,pKey models.PrimaryKey) error{
-	query := `DELETE from product where id = $1`
-	_, err := b.DB.Exec(ctx,query,pKey)
+	query := `DELETE from products where id = $1`
+	_, err := b.DB.Exec(ctx,query,pKey.ID)
 	if err != nil{
 		fmt.Println("Error while deleting product!", err.Error())
 		return err

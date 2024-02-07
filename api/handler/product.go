@@ -41,7 +41,7 @@ func (h Handler) CreateProduct(c *gin.Context) {
 		ID: pKey,
 	})
 	if err != nil {
-		handleResponse(c, "Error in handlers, while getting basket by id!" ,http.StatusInternalServerError, err.Error())
+		handleResponse(c, "Error in handlers, while getting product by id!" ,http.StatusInternalServerError, err.Error())
 		return
 	}
 
@@ -84,7 +84,7 @@ func (h Handler) GetProductByID(c *gin.Context) {
 // @Param 		 page query string false "page"
 // @Param 		 limit query string false "limit"
 // @Param 		 search query string false "search"
-// @Success      200  {object}  models.Product
+// @Success      200  {object}  models.ProductsResponse
 // @Failure      400  {object}  models.Response
 // @Failure      404  {object}  models.Response
 // @Failure      500  {object}  models.Response
@@ -150,6 +150,12 @@ func (h Handler) UpdateProduct(c *gin.Context) {
 	 }
  
 	 updateProd.ID = uid
+
+	 err := c.ShouldBindJSON(&updateProd)
+	 if err != nil{
+		handleResponse(c,"Error in handlers, while reading product json from client!",http.StatusBadRequest,err)
+		return
+	 }
 
 	pKey, err := h.Store.Product().Update(context.Background(),updateProd)
 	if err != nil {

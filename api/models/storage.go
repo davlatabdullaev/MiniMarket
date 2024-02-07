@@ -7,13 +7,13 @@ type Storage struct {
 	ProductID string`json:"product_id"`
 	BranchID  string`json:"branch_id"`
 	Count 	     int`json:"count"`
-	CreatedAt time.Time`json:"created_at"`
+	CreatedAt time.Time`json:"created_at"` 
 	UpdatedAt time.Time`json:"updated_at"`
 	DeletedAt time.Time`json:"deleted_at"`
 }
 
 type CreateStorage struct {
-	ProductID string`josn:"product_id"`
+	ProductID string`json:"product_id"`
 	BranchID  string`json:"branch_id"`
 	Count 	     int`json:"count"`
 }
@@ -27,5 +27,5 @@ type UpdateStorage struct {
 
 type StoragesResponse struct {
 	Storages []Storage`json:"repositories"`
-	Count                 int`json:"count"`
+	Count          int`json:"count"`
 }
