@@ -59,7 +59,7 @@ func (h Handler) CreateBasket(c *gin.Context) {
 // @Failure      400  {object}  models.Response
 // @Failure      404  {object}  models.Response
 // @Failure      500  {object}  models.Response
-func (h Handler) GetBasketByID(c *gin.Context) {
+func (h Handler) GetBasket(c *gin.Context) {
 	 
 	uid := c.Param("id")
 

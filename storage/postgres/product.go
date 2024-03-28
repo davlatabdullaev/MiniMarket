@@ -21,7 +21,7 @@ func NewProductRepo (db *pgxpool.Pool) storage.IProduct{
 
 func (p *productRepo) Create(ctx context.Context,product models.CreateProduct)(string, error){
 	uid := uuid.New()
-	query := `INSERT INTO products (id, name, price, bar_code, category_id) values ($1, $2, $3, $4, $5)`
+	query := `INSERT INTO products (id, name, price, barcode, category_id) values ($1, $2, $3, $4, $5)`
 	_, err := p.DB.Exec(ctx, query,
 		uid,
 		product.Name,

@@ -59,7 +59,7 @@ func (h Handler) CreateSale(c *gin.Context) {
 // @Failure      400  {object}  models.Response
 // @Failure      404  {object}  models.Response
 // @Failure      500  {object}  models.Response
-func (h Handler) GetSaleByID(c *gin.Context) {
+func (h Handler) GetSale(c *gin.Context) {
 
 	uid := c.Param("id")
 

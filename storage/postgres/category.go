@@ -44,7 +44,7 @@ func (c *categoryRepo) GetByID(ctx context.Context,pKey models.PrimaryKey) (mode
 
 	category := models.Category{}
 
-	err := c.DB.QueryRow(ctx,query, pKey).Scan(
+	err := c.DB.QueryRow(ctx,query, pKey.ID).Scan(
 		&category.ID,
 		&category.Name,
 		&category.ParentID,

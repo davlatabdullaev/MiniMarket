@@ -60,7 +60,7 @@ func (h Handler) CreateProduct(c *gin.Context) {
 // @Failure      400  {object}  models.Response
 // @Failure      404  {object}  models.Response
 // @Failure      500  {object}  models.Response
-func (h Handler) GetProductByID(c *gin.Context) {
+func (h Handler) GetProduct(c *gin.Context) {
 	uid := c.Param("id")
 
 	product, err := h.Store.Product().GetByID(context.Background(),models.PrimaryKey{

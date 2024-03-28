@@ -60,7 +60,7 @@ func (h Handler) CreateStorage(c *gin.Context) {
 // @Failure      400  {object}  models.Response
 // @Failure      404  {object}  models.Response
 // @Failure      500  {object}  models.Response
-func (h Handler) GetStorageByID(c *gin.Context) {
+func (h Handler) GetStorage(c *gin.Context) {
 	 uid := c.Param("id")
 
 	store, err := h.Store.Storage().GetByID(context.Background(),models.PrimaryKey{

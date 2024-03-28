@@ -3,16 +3,16 @@ CREATE TABLE if not exists branches (
    name VARCHAR(75) NOT NULL,
    address VARCHAR(75) NOT NULL,
    created_at TIMESTAMP DEFAULT NOW(),
-   updated_at TIMESTAMP,
+   updated_at TIMESTAMP DEFAULT NOW(),
    deleted_at TIMESTAMP DEFAULT NOW()
 );
 
 CREATE TABLE if not exists categories (
     id UUID PRIMARY KEY,
     name VARCHAR(75) NOT NULL,
-    parent_id uuid references categories(id),
+    parent_id uuid,
     created_at timestamp DEFAULT now(),
-    updated_at timestamp,
+    updated_at timestamp DEFAULT NOW(),
     deleted_at timestamp DEFAULT NOW()
 );
 CREATE TABLE if not exists products (
@@ -22,7 +22,7 @@ CREATE TABLE if not exists products (
     barcode varchar(10) unique not null,
     category_id uuid references categories(id),
     created_at timestamp DEFAULT now(),
-    updated_at timestamp,
+    updated_at timestamp DEFAULT NOW(),
     deleted_at timestamp DEFAULT NOW()
 );
 
@@ -32,7 +32,7 @@ create table if not exists storages (
     branch_id uuid references branches(id),
     count int not null,
     created_at timestamp DEFAULT now(),
-    updated_at timestamp,
+    updated_at timestamp DEFAULT NOW(),
     deleted_at timestamp DEFAULT NOW()
 );
 
@@ -43,7 +43,7 @@ create table if not exists tarifs (
     amount_for_cash numeric(75,4) not null,
     amount_for_card numeric(75,4) not null,
     created_at timestamp DEFAULT now(),
-    updated_at timestamp,
+    updated_at timestamp DEFAULT NOW(),
     deleted_at timestamp DEFAULT NOW()
 );
 
@@ -60,7 +60,7 @@ create table if not exists staffs (
    login varchar(75) not null,
    password varchar(128) not null,
    created_at timestamp DEFAULT now(),
-   updated_at timestamp,
+   updated_at timestamp DEFAULT NOW(),
    deleted_at timestamp DEFAULT NOW()
 );
 
@@ -74,7 +74,7 @@ create table if not exists sales (
     status  varchar(20) check (status in('in_proccess', 'success', 'cancel')),
     client_name varchar(75) not null,
     created_at timestamp DEFAULT now(),
-    updated_at timestamp,
+    updated_at timestamp DEFAULT NOW(),
     deleted_at timestamp DEFAULT NOW()
 );
 
@@ -86,7 +86,7 @@ create table if not exists baskets (
     quantity int not null,
     price numeric(75,4) not null,
     created_at timestamp DEFAULT now(),
-    updated_at timestamp,
+    updated_at timestamp DEFAULT NOW(),
     deleted_at timestamp DEFAULT NOW()
 );
  
@@ -101,7 +101,7 @@ create table if not exists transactions (
   amount numeric(75,4) not null,
   description text not null,
   created_at timestamp DEFAULT now(),
-  updated_at timestamp,
+  updated_at timestamp DEFAULT NOW(),
   deleted_at timestamp DEFAULT NOW()
 );
 
@@ -113,7 +113,7 @@ create table if not exists storage_transactions (
     price numeric(75,4) not null,
     quantity numeric(75,4) not null,
     created_at timestamp DEFAULT now(),
-    updated_at timestamp,
+    updated_at timestamp DEFAULT NOW(),
     deleted_at timestamp DEFAULT NOW()
 );
 
@@ -122,7 +122,7 @@ create table if not exists incomes (
     branch_id uuid references branches(id),
     price numeric(75,4) not null,
     created_at timestamp DEFAULT now(),
-    updated_at timestamp,
+    updated_at timestamp DEFAULT NOW(),
     deleted_at int DEFAULT 0
 );
 
@@ -133,27 +133,6 @@ create table if not exists income_products (
     price numeric(75,4) not null,
     count int,
     created_at timestamp DEFAULT now(),
-    updated_at timestamp,
+    updated_at timestamp DEFAULT NOW(),
     deleted_at int DEFAULT 0
 );
-
-//INSERTING
-INSERT INTO branches (id, name, address) values ('5b07248c-c631-4489-9dcb-3d0a4fa08917', 'Havas', 'Mirzo Ulugbek 71');
-
-INSERT INTO tarifs (id, name, tarif_type, amount_for_cash, amount_for_card) values
-('36cfd87e-ce9d-4711-97aa-687e350440bd','monthly','percent',0, 0);
-
-INSERT INTO staffs (id, branch_id, tarif_id, type_staff,name, balance, birth_date, 
-age, gender, login, password) values 
-    ('039f1e46-66d5-4be8-a21e-b6d1948a6fd2','5b07248c-c631-4489-9dcb-3d0a4fa08917','36cfd87e-ce9d-4711-97aa-687e350440bd',
-    'chashier', 'John Wick', 1000, '1999-01-01', 33, 'male', 'abcdefgh123@gmail.com', '12345');
-
-INSERT INTO categories (id, name, parent_id) values 
-('e46525d4-52b7-4765-a1fa-617c3250662b','drink', 'e46525d4-52b7-4765-a1fa-617c3250662b');
-
-INSERT INTO products (id, name, price, barcode, category_id) values
-('ca83b385-e03c-48cb-b975-c84dbe29ea8c','Lipton', 9000, '0000000001', 'e46525d4-52b7-4765-a1fa-617c3250662b');
-
-insert into sales (id, branch_id, chashier_id, payment_type, price, status, client_name)
- values ('8a15b4fa-6336-4e43-a069-766cdaff85cd', '5b07248c-c631-4489-9dcb-3d0a4fa08917', 
- '039f1e46-66d5-4be8-a21e-b6d1948a6fd2', 'cash', 0, 'in_proccess', 'Khojiakbar');

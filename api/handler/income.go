@@ -60,7 +60,7 @@ func (h Handler) CreateIncome(c *gin.Context) {
 // @Failure      400  {object}  models.Response
 // @Failure      404  {object}  models.Response
 // @Failure      500  {object}  models.Response
-func (h Handler) GetIncomeByID(c *gin.Context) {
+func (h Handler) GetIncome(c *gin.Context) {
 	 uid := c.Param("id")
 
 	 income, err := h.Store.Income().GetByID(context.Background(),models.PrimaryKey{
@@ -83,7 +83,6 @@ func (h Handler) GetIncomeByID(c *gin.Context) {
 // @Produce      json
 // @Param        page query string false "page"
 // @Param        limit query string false "limit"
-// @Param        search query string false "search"
 // @Success      201  {object}  models.IncomesResponse
 // @Failure      400  {object}  models.Response
 // @Failure      404  {object}  models.Response
@@ -140,7 +139,7 @@ func (h Handler) GetIncomeList(c *gin.Context) {
 // @Failure      400  {object}  models.Response
 // @Failure      404  {object}  models.Response
 // @Failure      500  {object}  models.Response
-func (h Handler) Updateincome(c *gin.Context) {
+func (h Handler) UpdateIncome(c *gin.Context) {
 	updIncome := models.UpdateIncome{}
 
 	uid := c.Param("id")

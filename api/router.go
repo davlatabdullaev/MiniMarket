@@ -19,51 +19,50 @@ func New(store storage.IfStorage) *gin.Engine {
 	r := gin.New()
 
 	r.POST("/branch", h.CreateBranch)
-	r.GET("/branch/:id", h.GetBranchByID)
+	r.GET("/branch/:id", h.GetBranch)
 	r.GET("/branches", h.GetBranchList)
 	r.PUT("/branch/:id", h.UpdateBranch)
 	r.DELETE("/branch/:id", h.DeleteBranch)
 
 	r.POST("/product", h.CreateProduct)
-	r.GET("/product/:id", h.GetProductByID)
+	r.GET("/product/:id", h.GetProduct)
 	r.GET("/products", h.GetProductList)
 	r.PUT("/product/:id", h.UpdateProduct)
 	r.DELETE("/product/:id", h.DeleteProduct)
 
 	r.POST("/basket", h.CreateBasket)
-	r.GET("/basket/:id", h.GetBasketByID)
+	r.GET("/basket/:id", h.GetBasket)
 	r.GET("/baskets", h.GetBasketList)
 	r.PUT("/basket/:id", h.UpdateBasket)
 	r.DELETE("/basket/:id", h.DeleteBasket)
 
 	r.POST("/sale", h.CreateSale)
-	r.GET("/sale/:id", h.GetSaleByID)
+	r.GET("/sale/:id", h.GetSale)
 	r.GET("/sales", h.GetSaleList)
 	r.PUT("/sale/:id", h.UpdateSale)
 	r.DELETE("/sale/:id", h.DeleteSale)
 
 	r.POST("/storage", h.CreateStorage)
-	r.GET("/storage/:id", h.GetStorageByID)
+	r.GET("/storage/:id", h.GetStorage)
 	r.GET("/storages", h.GetStorageList)
 	r.PUT("/storage/:id", h.UpdateStorage)
 	r.DELETE("/storage/:id", h.DeleteStorage)
 
-	// New
 	r.POST("/category", h.CreateCategory)
-	r.GET("/category/:id", h.GetCategoryByID)
+	r.GET("/category/:id", h.GetCategory)
 	r.GET("/categories", h.GetCategoryList)
 	r.PUT("/category/:id", h.UpdateCategory)
 	r.DELETE("/category/:id", h.DeleteCategory)
 
 	r.POST("/tarif", h.CreateTarif)
-	r.GET("/tarif/:id", h.GetTarifByID)
+	r.GET("/tarif/:id", h.GetTarif)
 	r.GET("/tarifs", h.GetTarifList)
 	r.PUT("/tarif/:id", h.UpdateTarif)
 	r.DELETE("/tarif/:id", h.DeleteTarif)
 
 	r.POST("/staff", h.CreateStaff)
-	r.GET("/staff/:id", h.GetStaffByID)
-	r.GET("/staff", h.GetStaffList)
+	r.GET("/staff/:id", h.GetStaff)
+	r.GET("/staffs", h.GetStaffList)
 	r.PUT("/staff/:id", h.UpdateStaff)
 	r.DELETE("/staff/:id", h.DeleteStaff)
 
@@ -74,10 +73,22 @@ func New(store storage.IfStorage) *gin.Engine {
 	r.DELETE("/transaction/:id", h.DeleteTransaction)
 
 	r.POST("/storage_transaction", h.CreateStorageTransaction)
-	r.GET("/storage_transaction/:id", h.GetStorageTransactionByID)
+	r.GET("/storage_transaction/:id", h.GetStorageTransaction)
 	r.GET("/storage_transactions", h.GetStorageTransactionList)
 	r.PUT("/storage_transaction/:id", h.UpdateStorageTransaction)
 	r.DELETE("/storage_transaction/:id", h.DeleteStorageTransaction)
+
+	r.POST("/income", h.CreateIncome)
+	r.GET("/income/:id", h.GetIncome)
+	r.GET("/incomes", h.GetIncomeList)
+	r.PUT("/income/:id", h.UpdateIncome)
+	r.DELETE("/income/:id", h.DeleteIncome)
+
+	r.POST("/income_product", h.CreateIncomeProduct)
+	r.GET("/income_product/:id", h.GetIncomeProduct)
+	r.GET("/income_products", h.GetIncomeProductsList)
+	r.PUT("/income_product/:id", h.UpdateIncomeProduct)
+	r.DELETE("/income_product/:id", h.DeleteIncomeProduct)
 
 	r.POST("/start_sale_barcode",h.StartSaleBarcode)
 

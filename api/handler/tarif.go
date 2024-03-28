@@ -58,7 +58,7 @@ func (h Handler) CreateTarif(c *gin.Context) {
 // @Failure      400  {object}  models.Response
 // @Failure      404  {object}  models.Response
 // @Failure      500  {object}  models.Response
-func (h Handler) GetTarifByID(c *gin.Context) {
+func (h Handler) GetTarif(c *gin.Context) {
 	
 	uid := c.Param("id")
 

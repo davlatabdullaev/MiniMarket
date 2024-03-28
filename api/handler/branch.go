@@ -60,7 +60,7 @@ func (h Handler) CreateBranch(c *gin.Context) {
 // @Failure      400  {object}  models.Response
 // @Failure      404  {object}  models.Response
 // @Failure      500  {object}  models.Response
-func (h Handler) GetBranchByID(c *gin.Context) {
+func (h Handler) GetBranch(c *gin.Context) {
 	 uid := c.Param("id")
 
 	branch, err := h.Store.Branch().GetByID(context.Background(),models.PrimaryKey{

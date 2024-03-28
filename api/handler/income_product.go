@@ -83,7 +83,6 @@ func (h Handler) GetIncomeProduct(c *gin.Context) {
 // @Produce      json
 // @Param        page query string false "page"
 // @Param        limit query string false "limit"
-// @Param        search query string false "search"
 // @Success      201  {object}  models.IncomeProductsResponse
 // @Failure      400  {object}  models.Response
 // @Failure      404  {object}  models.Response
@@ -140,7 +139,7 @@ func (h Handler) GetIncomeProductsList(c *gin.Context) {
 // @Failure      400  {object}  models.Response
 // @Failure      404  {object}  models.Response
 // @Failure      500  {object}  models.Response
-func (h Handler) UpdateincomeProduct(c *gin.Context) {
+func (h Handler) UpdateIncomeProduct(c *gin.Context) {
 	updIncomeProduct := models.UpdateIncomeProduct{}
 
 	uid := c.Param("id")

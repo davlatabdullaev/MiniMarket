@@ -73,7 +73,7 @@ func (i *incomeProductRepo) GetList(ctx context.Context, req models.GetListReque
 	}
 
 	query := `SELECT id, income_id, product_id, price, created_at, updated_at
-		from incomes where deleted_at = 0 `
+		from income_products where deleted_at = 0 `
 	
 	query += ` LIMIT $1 OFFSET $2`
 
