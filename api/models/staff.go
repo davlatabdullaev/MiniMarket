@@ -37,7 +37,7 @@ type UpdateStaff struct {
 	TarifID   string `json:"tarif_id"`
 	TypeStaff string `json:"type_staff"`
 	Name      string `json:"name"`
-	Balance   string `json:"balance"`
+	Balance   	 int `json:"balance"`
 	BirthDate string `json:"birth_date"`
 	Gender    string `json:"gender"`
 	Login     string `json:"login"`
@@ -48,4 +48,9 @@ type UpdateStaff struct {
 type StaffsResponse struct {
 	Staffs []Staff `json:"staffs"`
 	Count  int     `json:"count"`
+}
+
+type UpdateSalary struct {
+	ID string `json:"id"`
+	Balance int `json:"balance"`
 }

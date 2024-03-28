@@ -53,7 +53,7 @@ func (t *tarifRepo) GetByID(ctx context.Context, pKey models.PrimaryKey) (models
 	 created_at, updated_at from tarifs
 	 where id = $1`
 
-	row := t.DB.QueryRow(ctx, query, pKey)
+	row := t.DB.QueryRow(ctx, query, pKey.ID)
 
 	err := row.Scan(
 		&tarif.ID,

@@ -40,3 +40,20 @@ type TransactionsResponse struct {
 	Transactions []Transaction `json:"transaction"`
 	Count        int           `json:"count"`
 }
+
+//NEW from assistant
+type StaffInformation struct {
+	StaffID string`json:"staff_id"`
+	Amount float64`json:"amount"`
+}
+
+type UpdateStaffBalanceAndCreateTransaction struct {
+	Cashier         StaffInformation`json:"cashier"`
+	ShopAssistant   StaffInformation`json:"shop_assistant"`
+	SaleID 					  string`json:"sale_id"`
+	StaffID 				  string`json:"staff_id"`
+	TransactionType 		  string`json:"transaction_type"`
+	SourceType 				  string`json:"source_type"`
+	Amount 					 float64`json:"amount"`
+	Description 			  string`json:"description"`
+}

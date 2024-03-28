@@ -44,13 +44,12 @@ func (s *saleRepo) Create(ctx context.Context,sale models.CreateSale)(string, er
 
 func (s *saleRepo) GetByID(ctx context.Context,pKey models.PrimaryKey)(models.Sale, error){
 	sale := models.Sale{}
-	query :=  `SELECT id, branch_id, shop_assistent_id,
+	query :=  `SELECT id, branch_id,
 			chashier_id, payment_type, price, status, client_name,
 			created_at, updated_at from sales where id = $1`
 	err := s.DB.QueryRow(ctx,query,pKey.ID).Scan(
 		 &sale.ID,
 		 &sale.BranchID,
-		 &sale.ShopAssistantID,
 		 &sale.CashierID,
 		 &sale.PaymentType,
 		 &sale.Price,
@@ -165,5 +164,17 @@ func (s *saleRepo) Delete(ctx context.Context, pKey models.PrimaryKey) error{
 		fmt.Println("Error while deleting sale!", err.Error())
 		return err
 	}
+	return nil
+}
+
+func (s *saleRepo) UpdateSalePrice(ctx context.Context, sale models.UpdateSaleForPrice) error{
+	query := `UPDATE sales set status = $1, price = $2 where id = $3`
+
+	_, err := s.DB.Exec(ctx, query, sale.Status, sale.Price, sale.ID)
+	if err != nil{
+		fmt.Println("error while updating price and status of sale!", err.Error())
+		return err
+	}
+
 	return nil
 }

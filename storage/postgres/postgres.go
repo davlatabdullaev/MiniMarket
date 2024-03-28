@@ -5,6 +5,7 @@ import (
 	"developer/config"
 	"developer/storage"
 	"fmt"
+
 	_ "github.com/golang-migrate/migrate/v4/database"          //database is needed for migration
 	_ "github.com/golang-migrate/migrate/v4/database/postgres" //postgres is used for database
 	_ "github.com/golang-migrate/migrate/v4/source/file"       //file is needed for migration url
@@ -68,7 +69,7 @@ func (s Store) Basket() storage.IBasket {
 func (s Store) Storage() storage.IStorage {
 	return NewStorageRepo(s.Pool)
 }
-//New
+
 func (s Store) Staff() storage.IStaff{
 	return NewStaffRepo(s.Pool)
 }
@@ -87,4 +88,12 @@ func (s Store) Transaction() storage.ITransaction {
 
 func (s Store) StorageTransaction()storage.IStorageTransaction  {
 	return NewStorageTransactionRepo(s.Pool)
+}
+
+func (s Store) Income() storage.IIncome {
+	return NewIncomeRepo(s.Pool)
+}
+
+func (s Store) IncomeProduct()storage.IIncomeProduct  {
+	return NewIncomeProductRepo(s.Pool)
 }

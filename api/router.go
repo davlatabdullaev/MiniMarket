@@ -79,7 +79,7 @@ func New(store storage.IfStorage) *gin.Engine {
 	r.PUT("/storage_transaction/:id", h.UpdateStorageTransaction)
 	r.DELETE("/storage_transaction/:id", h.DeleteStorageTransaction)
 
-	r.POST("/start_sale", h.StartSale)
+	r.POST("/start_sale_barcode",h.StartSaleBarcode)
 
 
 	r.GET("/swagger/*any", ginSwagger.WrapHandler(swaggerFiles.Handler))

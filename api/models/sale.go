@@ -46,3 +46,16 @@ type StartSale struct {
 	ProductId string`json:"product_id"`
 	Quantity     int`json:"quantity"`
 }
+
+type EndSale struct {
+	ProductName  string`json:"product_name"`
+	ProductQuantity int`json:"product_quantity"`
+	ProductPrice    int`json:"product_price"`
+	TotalSum        int`json:"total_sum"`
+}
+
+type UpdateSaleForPrice struct {
+	ID     string`json:"id"`
+	Price     int`json:"price"`
+	Status string`json:"status"`
+}

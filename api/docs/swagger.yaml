@@ -203,6 +203,17 @@ definitions:
       transaction_type:
         type: string
     type: object
+  models.EndSaleResp:
+    properties:
+      product_name:
+        type: string
+      product_price:
+        type: integer
+      product_quantity:
+        type: integer
+      total_sum:
+        type: integer
+    type: object
   models.Product:
     properties:
       bar_code:
@@ -313,12 +324,14 @@ definitions:
           $ref: '#/definitions/models.Staff'
         type: array
     type: object
-  models.StartSale:
+  models.StartSaleBarcodeReq:
     properties:
-      product_id:
+      barcode:
         type: string
       quantity:
         type: integer
+      sale_id:
+        type: string
     type: object
   models.Storage:
     properties:
@@ -500,7 +513,7 @@ definitions:
   models.UpdateStaff:
     properties:
       balance:
-        type: string
+        type: integer
       birth_date:
         type: string
       branch_id:
@@ -1636,26 +1649,24 @@ paths:
       summary: Get staff list
       tags:
       - staff
-  /start_sale:
+  /start_sale_barcode:
     post:
       consumes:
       - application/json
-      description: starting sale
+      description: starting sale with barcode
       parameters:
-      - description: start_sale
+      - description: start_sale_barcode
         in: body
-        name: start_sale
+        name: start_sale_barcode
         schema:
-          items:
-            $ref: '#/definitions/models.StartSale'
-          type: array
+          $ref: '#/definitions/models.StartSaleBarcodeReq'
       produces:
       - application/json
       responses:
         "200":
           description: OK
           schema:
-            $ref: '#/definitions/models.Sale'
+            $ref: '#/definitions/models.EndSaleResp'
         "400":
           description: Bad Request
           schema:
@@ -1668,9 +1679,9 @@ paths:
           description: Internal Server Error
           schema:
             $ref: '#/definitions/models.Response'
-      summary: Starting sale
+      summary: Starting sale with barcode
       tags:
-      - start_sale
+      - start_sale_barcode
   /storage:
     post:
       consumes:

@@ -1605,9 +1605,9 @@ const docTemplate = `{
                 }
             }
         },
-        "/start_sale": {
+        "/start_sale_barcode": {
             "post": {
-                "description": "starting sale",
+                "description": "starting sale with barcode",
                 "consumes": [
                     "application/json"
                 ],
@@ -1615,19 +1615,16 @@ const docTemplate = `{
                     "application/json"
                 ],
                 "tags": [
-                    "start_sale"
+                    "start_sale_barcode"
                 ],
-                "summary": "Starting sale",
+                "summary": "Starting sale with barcode",
                 "parameters": [
                     {
-                        "description": "start_sale",
-                        "name": "start_sale",
+                        "description": "start_sale_barcode",
+                        "name": "start_sale_barcode",
                         "in": "body",
                         "schema": {
-                            "type": "array",
-                            "items": {
-                                "$ref": "#/definitions/models.StartSale"
-                            }
+                            "$ref": "#/definitions/models.StartSaleBarcodeReq"
                         }
                     }
                 ],
@@ -1635,7 +1632,7 @@ const docTemplate = `{
                     "200": {
                         "description": "OK",
                         "schema": {
-                            "$ref": "#/definitions/models.Sale"
+                            "$ref": "#/definitions/models.EndSaleResp"
                         }
                     },
                     "400": {
@@ -3039,6 +3036,23 @@ const docTemplate = `{
                 }
             }
         },
+        "models.EndSaleResp": {
+            "type": "object",
+            "properties": {
+                "product_name": {
+                    "type": "string"
+                },
+                "product_price": {
+                    "type": "integer"
+                },
+                "product_quantity": {
+                    "type": "integer"
+                },
+                "total_sum": {
+                    "type": "integer"
+                }
+            }
+        },
         "models.Product": {
             "type": "object",
             "properties": {
@@ -3207,14 +3221,17 @@ const docTemplate = `{
                 }
             }
         },
-        "models.StartSale": {
+        "models.StartSaleBarcodeReq": {
             "type": "object",
             "properties": {
-                "product_id": {
+                "barcode": {
                     "type": "string"
                 },
                 "quantity": {
                     "type": "integer"
+                },
+                "sale_id": {
+                    "type": "string"
                 }
             }
         },
@@ -3494,7 +3511,7 @@ const docTemplate = `{
             "type": "object",
             "properties": {
                 "balance": {
-                    "type": "string"
+                    "type": "integer"
                 },
                 "birth_date": {
                     "type": "string"

@@ -5,6 +5,7 @@ import (
 	"developer/api/models"
 	"developer/storage"
 	"fmt"
+
 	"github.com/google/uuid"
 	"github.com/jackc/pgx/v5/pgxpool"
 )
@@ -23,7 +24,7 @@ func (t *transactionRepo) Create(ctx context.Context, request models.CreateTrans
 
 	uid := uuid.New()
 
-	query := `INSERT INTO transaction (id, sale_id, staff_id, transaction_type,
+	query := `INSERT INTO transactions (id, sale_id, staff_id, transaction_type,
 		source_type, amount, description) 
 	values 
 	($1, $2, $3, $4, $5, $6, $7)`
@@ -45,7 +46,7 @@ func (t *transactionRepo) Create(ctx context.Context, request models.CreateTrans
 	return uid.String(), nil
 }
 
-func (t *transactionRepo) GetByID(ctx context.Context, pKey  models.PrimaryKey) (models.Transaction, error) {
+func (t *transactionRepo) GetByID(ctx context.Context, pKey models.PrimaryKey) (models.Transaction, error) {
 
 	transaction := models.Transaction{}
 
@@ -126,7 +127,7 @@ func (t *transactionRepo) GetList(ctx context.Context, request models.GetListReq
 			&transaction.Description,
 			&transaction.CreatedAt,
 			&transaction.UpdatedAt,
-		) 
+		)
 		if err != nil {
 			fmt.Println("error is while scanning transaction data", err.Error())
 			return models.TransactionsResponse{}, err
@@ -177,5 +178,92 @@ func (t *transactionRepo) Delete(ctx context.Context, pKey models.PrimaryKey) er
 		return err
 	}
 
+	return nil
+}
+
+// NEW from assistant
+func (t *transactionRepo) UpdateStaffBalanceAndCreateTransaction(ctx context.Context, req models.UpdateStaffBalanceAndCreateTransaction) error {
+	tr, err := t.DB.Begin(ctx)
+	if err != nil {
+		fmt.Println("error while starting transaction to db!", err.Error())
+		return err
+	}
+
+	defer func() {
+		if err != nil {
+			tr.Rollback(ctx)
+		}
+		tr.Commit(ctx)
+	}()
+
+	cashierUpdateQuery := `
+	UPDATE staffs set balance = balance + $1 where id = $2`
+
+	_, err = tr.Exec(ctx, cashierUpdateQuery,
+		req.Cashier.Amount,
+		req.Cashier.StaffID,
+	)
+
+	if err != nil {
+		fmt.Println("error while updating balance of cashier!", err.Error())
+		return err
+	}
+
+	uid := uuid.New()
+
+	query := `INSERT INTO transactions (id, sale_id, staff_id, transaction_type,
+		source_type, amount, description) 
+	values 
+	($1, $2, $3, $4, $5, $6, $7) `
+
+	_, err = tr.Exec(ctx, query,
+		uid,
+		req.SaleID,
+		req.Cashier.StaffID,
+		req.TransactionType,
+		req.SourceType,
+		req.Amount,
+		req.Description,
+	)
+	if err != nil {
+		fmt.Println("error while creating a transaction!", err.Error())
+		return err
+	}
+
+	if req.ShopAssistant.StaffID != "" {
+		shopAssistantUpdateQuery := `
+	UPDATE staffs set balance = balance + $1 where id = $2`
+
+	_, err = tr.Exec(ctx, shopAssistantUpdateQuery,
+		req.Cashier.Amount,
+		req.Cashier.StaffID,
+	)
+
+	if err != nil {
+		fmt.Println("error while updating balance of cashier!", err.Error())
+		return err
+	}
+
+	uid = uuid.New()
+
+	query2 := `INSERT INTO transactions (id, sale_id, staff_id, transaction_type,
+		source_type, amount, description) 
+	values 
+	($1, $2, $3, $4, $5, $6, $7) `
+
+	_, err = t.DB.Exec(ctx, query2,
+		uid,
+		req.SaleID,
+		req.ShopAssistant.StaffID,
+		req.TransactionType,
+		req.SourceType,
+		req.Amount,
+		req.Description,
+	)
+	if err != nil {
+		fmt.Println("error while creating a transaction!", err.Error())
+		return err
+	}
+	}
 	return nil
 }

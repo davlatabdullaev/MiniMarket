@@ -23,9 +23,9 @@ func (s *storageTransactionRepo) Create(ctx context.Context, createStTrans model
 
 	uid := uuid.New()
 
-	query := `INSERT INTO storage_transactions (id, staff_id, product_id, storage_tranaction_type, 
+	query := `INSERT INTO storage_transactions (id, staff_id, product_id, storage_transaction_type, 
 		price, quantity) 
-		values ($1, $2, $3, $4, $5, $6, $7)`
+		values ($1, $2, $3, $4, $5, $6)`
 
 	_, err := s.DB.Exec(ctx, query,
 		uid,

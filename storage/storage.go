@@ -19,6 +19,8 @@ type IfStorage interface {
 	Staff() IStaff
 	Transaction() ITransaction
 	StorageTransaction() IStorageTransaction
+	Income() IIncome
+	IncomeProduct() IIncomeProduct
 }
 
 type IBranch interface {
@@ -35,6 +37,7 @@ type ISale interface {
 	GetList(context.Context,models.GetListRequest) (models.SalesResponse, error)
 	Update(context.Context,models.UpdateSale) (string, error)
 	Delete(context.Context,models.PrimaryKey) error
+	UpdateSalePrice(context.Context, models.UpdateSaleForPrice) error 
 }
 
 type IBasket interface {
@@ -50,6 +53,7 @@ type IProduct interface {
 	GetList(context.Context,models.GetListRequest) (models.ProductsResponse, error)
 	Update(context.Context,models.UpdateProduct) (string, error)
 	Delete(context.Context,models.PrimaryKey) error
+	GetByBarcode(context.Context, string)(models.Product, error)
 }
 
 type IStorage interface {
@@ -58,6 +62,8 @@ type IStorage interface {
 	GetList(context.Context,models.GetListRequest) (models.StoragesResponse, error)
 	Update(context.Context,models.UpdateStorage) (string, error)
 	Delete(context.Context,models.PrimaryKey) error
+	GetByProductID(context.Context,models.PrimaryKey) (models.Storage, error)
+	UpdateCount(context.Context, string, int)error
 }
 
 type ICategory interface {
@@ -74,6 +80,7 @@ type IStaff interface {
 	GetList(context.Context,models.GetListRequest) (models.StaffsResponse, error)
 	Update(context.Context,models.UpdateStaff) (string, error)
 	Delete(context.Context,models.PrimaryKey) error
+	UpdateSalary(context.Context,models.PrimaryKey, int) error
 }
 
 type IStorageTransaction interface {
@@ -97,5 +104,22 @@ type ITransaction interface {
 	GetByID(context.Context,models.PrimaryKey) (models.Transaction, error)
 	GetList(context.Context,models.GetListRequest) (models.TransactionsResponse, error)
 	Update(context.Context,models.UpdateTransaction) (string, error)
+	Delete(context.Context,models.PrimaryKey) error
+	UpdateStaffBalanceAndCreateTransaction(context.Context, models.UpdateStaffBalanceAndCreateTransaction) error
+}
+
+type IIncome interface {
+	Create(context.Context,models.CreateIncome) (string, error)
+	GetByID(context.Context,models.PrimaryKey) (models.Income, error)
+	GetList(context.Context,models.GetListRequest) (models.IncomesResponse, error)
+	Update(context.Context,models.UpdateIncome) (models.Income, error)
+	Delete(context.Context,models.PrimaryKey) error
+}
+
+type IIncomeProduct interface {
+	Create(context.Context,models.CreateIncomeProduct) (string, error)
+	GetByID(context.Context,models.PrimaryKey) (models.IncomeProduct, error)
+	GetList(context.Context,models.GetListRequest) (models.IncomeProductsResponse, error)
+	Update(context.Context,models.UpdateIncomeProduct) (models.IncomeProduct, error)
 	Delete(context.Context,models.PrimaryKey) error
 }

@@ -189,3 +189,14 @@ func (s *staffRepo) Delete(ctx context.Context, pKey models.PrimaryKey) error {
 
 	return nil
 }
+
+func (s *staffRepo) UpdateSalary(ctx context.Context, pKey models.PrimaryKey, balance int)error{
+	query := `UPDATE staffs set balance = balance + $1 where id = $2 `
+
+	_, err := s.DB.Exec(ctx, query, balance, pKey.ID)
+	if err != nil{
+		fmt.Println("error while updating balance of staff!", err.Error())
+		return err
+	}
+	return nil
+}

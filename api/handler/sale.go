@@ -4,7 +4,7 @@ import (
 	"context"
 	"developer/api/models"
 	"errors"
-	"net/http"
+ 	"net/http"
 	"strconv"
 
 	"github.com/gin-gonic/gin"
@@ -198,91 +198,3 @@ func (h Handler) DeleteSale(c *gin.Context) {
 	handleResponse(c, "", http.StatusOK, "data successfully deleted")
 }
 
-// NEW
-
-// StartSale godoc
-// @Router       /start_sale [POST]
-// @Summary      Starting sale
-// @Description  starting sale
-// @Tags         start_sale
-// @Accept       json
-// @Produce      json
-// @Param 		 start_sale body []models.StartSale false "start_sale"
-// @Success      200  {object}  models.Sale
-// @Failure      400  {object}  models.Response
-// @Failure      404  {object}  models.Response
-// @Failure      500  {object}  models.Response
-func (h Handler) StartSale(c *gin.Context) {
-	totalSum := 0
-
-	startSale := []models.StartSale{}
-	createSale := models.CreateSale{
-		BranchID: "5b07248c-c631-4489-9dcb-3d0a4fa08917",
-		ShopAssistantID: "abcdefghij",
-		CashierID:   "123456789",
-		PaymentType: "cash",
-		Price:       0,
-		Status:      "in_procces",
-		ClientName:  "Salohiddin",
-	}
-
-	err := c.ShouldBindJSON(&startSale)
-	if err != nil{
-		handleResponse(c, "Error in handlers, reading start sale json from clients!", http.StatusBadRequest, err)
-		return
-	}
-
-	saleID, err := h.Store.Sale().Create(context.Background(), createSale)
-	if err != nil {
-		handleResponse(c, "Error in handlers, while creating sale for start sell!", http.StatusInternalServerError, err)
-		return
-	}
-
-	for _, sale := range startSale{
-	product, err := h.Store.Product().GetByID(context.Background(), models.PrimaryKey{
-		ID: sale.ProductId,
-	})
-	if err != nil {
-		handleResponse(c, "Error in handlers, while getting product by id!", http.StatusInternalServerError, err)
-		return
-	}
-
-	createBasket := models.CreateBasket{
-		SaleID:    saleID,
-		ProductID: sale.ProductId,
-		Quantity:   sale.Quantity,
-		Price:     uint(product.Price * sale.Quantity),
-	}
-
-	totalSum = totalSum + int(createBasket.Price)
-
-	_, err = h.Store.Basket().Create(context.Background(), createBasket)
-	if err != nil {
-		handleResponse(c, "Error in handlers, while creating basket!", http.StatusInternalServerError, err)
-		return
-	}
-}
-	saleId, err := h.Store.Sale().Update(context.Background(), models.UpdateSale{
-		ID: saleID,
-		BranchID: createSale.BranchID,
-		ShopAssistantID: "abcdefghij",
-		CashierID: "123456789",
-		PaymentType: createSale.PaymentType,
-		Price:  uint(totalSum),
-		Status: "succes",
-		ClientName: createSale.ClientName,
-	})
-	if err != nil {
-		handleResponse(c, "Error in handlers, while updating sale by id!", http.StatusInternalServerError, err)
-		return
-	}
-
-	sale, err := h.Store.Sale().GetByID(context.Background(), models.PrimaryKey{ID: saleId})
-	if err != nil{
-		handleResponse(c, "Error in handlers, while getting sale by id!", http.StatusInternalServerError,err)
-		return
-	}
-
-	handleResponse(c, "success", http.StatusOK, sale)
-
-}

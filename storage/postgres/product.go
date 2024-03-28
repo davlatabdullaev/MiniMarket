@@ -139,12 +139,36 @@ func (p *productRepo) Update(ctx context.Context, product models.UpdateProduct)(
 	return product.ID, nil
 }
 
-func (b *productRepo) Delete(ctx context.Context,pKey models.PrimaryKey) error{
+func (p *productRepo) Delete(ctx context.Context,pKey models.PrimaryKey) error{
 	query := `DELETE from products where id = $1`
-	_, err := b.DB.Exec(ctx,query,pKey.ID)
+	_, err := p.DB.Exec(ctx,query,pKey.ID)
 	if err != nil{
 		fmt.Println("Error while deleting product!", err.Error())
 		return err
 	}
 	return nil
+}
+
+func (p *productRepo) GetByBarcode(ctx context.Context, barcode string)(models.Product, error){
+	product := models.Product{}
+
+	query := `SELECT id, name, price, barcode, category_id, created_at, updated_at
+	from products where barcode = $1
+	`
+
+	err := p.DB.QueryRow(ctx,query,barcode).Scan(
+		&product.ID,
+		&product.Name,
+		&product.Price,
+		&product.BarCode,
+		&product.CategoryID,
+		&product.CreatedAt,
+		&product.UpdatedAt,
+	)
+	if err != nil{
+		fmt.Println("error while selectin product by barcode!", err.Error())
+		return models.Product{}, err
+	}
+
+	return product, nil
 }
